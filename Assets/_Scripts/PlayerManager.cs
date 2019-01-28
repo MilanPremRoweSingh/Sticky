@@ -64,21 +64,18 @@ public class PlayerManager : MonoBehaviour
 
         for (int i = 0; i < n; i++)
         {
-            verts[i] = new Vector3(particles[i].p.x, particles[i].p.y);
-            normals[i] = new Vector3(0, 0, -1);
+            verts.Add(new Vector3(particles[i].p.x, particles[i].p.y));
+            normals.Add(new Vector3(0, 0, -1));
 
             tris[3 * i + 0] = n;
             tris[3 * i + 1] = i % n;
             tris[3 * i + 2] = (i + 1) % n;
         }
-        verts[n] = new Vector3(centre.x, centre.y);
-        normals[n] = new Vector3(0, 0, -1);
+        verts.Add( new Vector3(centre.x, centre.y));
+        normals.Add( new Vector3(0, 0, -1));
         mesh.SetVertices(verts);
-        mesh
-        mesh.vertices = verts;
-        mesh.triangles = tris;
-        mesh.normals = normals;
-
+        mesh.SetNormals(normals);
+        mesh.SetIndices(tris, MeshTopology.Triangles,0);
     }
 
     void InitParticles()
