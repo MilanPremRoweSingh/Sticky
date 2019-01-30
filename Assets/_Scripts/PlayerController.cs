@@ -15,7 +15,8 @@ public class PlayerController : MonoBehaviour
 
     // Horizontal Accelleration on input
     public float startAcc;
-    
+
+    // Upwards force applied on jump
     public float jumpForce;
 
     // Threshold for horiz input to be considered
@@ -26,22 +27,35 @@ public class PlayerController : MonoBehaviour
     [Range(0, 1)]
     public float restitution;
 
+    // Min time between sticky jumps
+    public float timeBetweenStickyJumps;
+
     // Velocity
     private Vector2 v;
+
+    // Maximum distance for a contact to be 'stickable'
+    public float stickDistance;
+
+
     private Rigidbody2D rb;
 
     private bool bouncy;
+    private bool sticky;
+    private bool canJump;
 
     public float radius;
 
+    const RigidbodyConstraints2D rbStuck = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezePositionY | RigidbodyConstraints2D.FreezeRotation;
+    const RigidbodyConstraints2D rbCanMove = RigidbodyConstraints2D.FreezeRotation;
 
+    private float prevTimeStickyJump;
 
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-
+        prevTimeStickyJump = Time.time;
 
     }
 
@@ -62,15 +76,28 @@ public class PlayerController : MonoBehaviour
         {
             GetComponent<CircleCollider2D>().isTrigger = true;
             bouncy = true;
+            sticky = false;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             GetComponent<CircleCollider2D>().isTrigger = false;
             bouncy = false;
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            sticky = true;
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            GetComponent<CircleCollider2D>().isTrigger = false;
+            sticky = false;
+            rb.constraints = rbCanMove;
+        }
+
     }
 
-    void MoveOnInput( float xIn )
+    void MoveOnInput(float xIn)
     {
         xIn = Mathf.Abs(xIn) > 0.25f ? Mathf.Sign(xIn) : 0;
         if (Mathf.Abs(xIn) > moveThreshold)
@@ -79,7 +106,7 @@ public class PlayerController : MonoBehaviour
             {
                 float vX = v.x;
                 vX += xIn * startAcc * Time.deltaTime;
-                v.x = ClampAbs(vX, maxHorizSpeed); 
+                v.x = ClampAbs(vX, maxHorizSpeed);
             }
             else
             {
@@ -103,7 +130,20 @@ public class PlayerController : MonoBehaviour
     void Jump()
     {
         // TODO: Replace with own Force Accumulator after CD is done
-        rb.AddForce(Vector2.up * jumpForce);
+        float timeSinceStickyJump = Time.time - prevTimeStickyJump;
+
+        if (sticky && rb.constraints == rbStuck && timeSinceStickyJump > timeBetweenStickyJumps)
+        {
+            rb.constraints = rbCanMove;
+            rb.AddForce(Vector2.up * jumpForce);
+            canJump = false;
+            prevTimeStickyJump = Time.time;
+        }
+        else if (canJump)
+        {
+            rb.AddForce(Vector2.up* jumpForce);
+            canJump = false;
+        }
     }
 
     float MaxAbs( float f0, float f1 )
@@ -116,14 +156,37 @@ public class PlayerController : MonoBehaviour
         return Mathf.Abs(val) > Mathf.Abs(maxVal) ? Mathf.Sign(val) * Mathf.Abs(maxVal) : val;
     }
 
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        ContactPoint2D[] contacts = new ContactPoint2D[collision.contactCount];
+        collision.GetContacts(contacts);
+        float minContactDist = Mathf.Infinity;
+        foreach (ContactPoint2D contact in contacts)
+        {
+            float surfAng = Mathf.Acos(Vector2.Dot(contact.normal, Vector2.up))* Mathf.Rad2Deg;
+            if (Mathf.Abs(surfAng) <= 75)
+            {
+                canJump = true;
+            }
+
+            float contactDist = (contact.point - Pos2D()).magnitude;
+            minContactDist = (minContactDist > contactDist) ? contactDist : minContactDist;
+        }
+
+        if (sticky && minContactDist < stickDistance + radius)
+        {
+            rb.constraints = rbStuck;
+            rb.velocity = new Vector2();
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (bouncy)
         {
             if (other.tag == "Level")
             {
-                // TODO: Generalise CircleCast radius
-                RaycastHit2D contact = Physics2D.CircleCast(transform.position, transform.lossyScale.x * 0.5f, rb.velocity, 10.0f, ~LayerMask.GetMask("Player"));
+                RaycastHit2D contact = Physics2D.CircleCast(transform.position, radius, rb.velocity, 1.0f, ~LayerMask.GetMask("Player"));
                 if (contact.collider != null)
                 {
                     float vMag = rb.velocity.magnitude;
@@ -143,18 +206,7 @@ public class PlayerController : MonoBehaviour
     private void OnTriggerStay2D(Collider2D other) {
         if (other.tag == "Level")
         {
-            RaycastHit2D contact = Physics2D.CircleCast(transform.position, transform.lossyScale.x * 0.5f, rb.velocity, 10.0f, ~LayerMask.GetMask("Player"));
-            if (contact.collider != null)
-            {
-                Vector2 toContact = new Vector2(transform.position.x, transform.position.y) - contact.point;
-                if (toContact.sqrMagnitude < radius * radius) {
-                    transform.position = contact.point + toContact.normalized * radius;
-                    Vector2 normalPerp = new Vector2(-contact.normal.y, contact.normal.x);
-                    float vAlongNormPerp = Vector2.Dot(normalPerp, v);
-                    v = normalPerp * vAlongNormPerp;
-                    rb.velocity = v;
-                }
-            }
+            StillCollisionResolution();
         }
     }
 
@@ -162,5 +214,32 @@ public class PlayerController : MonoBehaviour
     {
         float diameter = 2 * radius;
         transform.localScale = new Vector3(diameter, diameter, diameter);
+    }
+
+    void StillCollisionResolution()
+    {
+        RaycastHit2D contact = Physics2D.CircleCast(transform.position, transform.lossyScale.x * 0.5f, rb.velocity, 10.0f, ~LayerMask.GetMask("Player"));
+        if (contact.collider != null)
+        {
+            Vector2 toContact = new Vector2(transform.position.x, transform.position.y) - contact.point;
+            if (toContact.sqrMagnitude < radius * radius)
+            {
+                transform.position = contact.point + toContact.normalized * radius;
+                Vector2 normalPerp = new Vector2(-contact.normal.y, contact.normal.x);
+                float vAlongNormPerp = Vector2.Dot(normalPerp, v);
+                v = normalPerp * vAlongNormPerp;
+                rb.velocity = v;
+            }
+        }
+    }
+
+    void BounceCollisionResolution()
+    {
+
+    }
+
+    Vector2 Pos2D()
+    {
+        return new Vector2(transform.position.x, transform.position.y);
     }
 }

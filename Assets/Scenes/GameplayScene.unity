@@ -432,7 +432,7 @@ CircleCollider2D:
   m_GameObject: {fileID: 553252215}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 0d32cbf33e7254846bae5c7862df28ec, type: 2}
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
@@ -538,6 +538,8 @@ MonoBehaviour:
   jumpForce: 650
   moveThreshold: 0.356
   restitution: 0
+  timeBetweenStickyJumps: 0.15
+  radius: 0.375
 --- !u!1 &752440096
 GameObject:
   m_ObjectHideFlags: 0
