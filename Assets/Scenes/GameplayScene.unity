@@ -309,11 +309,11 @@ GameObject:
   - component: {fileID: 125307218}
   - component: {fileID: 125307217}
   - component: {fileID: 125307216}
-  - component: {fileID: 125307215}
   - component: {fileID: 125307214}
   - component: {fileID: 125307221}
   - component: {fileID: 125307220}
   - component: {fileID: 125307219}
+  - component: {fileID: 125307215}
   m_Layer: 10
   m_Name: PlayerRefactor
   m_TagString: Untagged
@@ -336,7 +336,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.55
 --- !u!50 &125307215
 Rigidbody2D:
   serializedVersion: 4
@@ -351,13 +351,13 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0
-  m_GravityScale: 5
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 1
-  m_Constraints: 4
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!23 &125307216
 MeshRenderer:
   m_ObjectHideFlags: 0
