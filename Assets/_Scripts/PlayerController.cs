@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
 
     public float maxHorizSpeed;
 
+    public float maxOverallSpeed;
+
     // Horizontal decelleration on input horiz input opposite current velocity
     public float turnDecc;
 
@@ -62,12 +64,16 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        v.y = rb.velocity.y;
+        ClampVector2(v, maxOverallSpeed);
+        rb.velocity = v;
         UpdateScaleFromRadius();
 
         float xIn = Input.GetAxisRaw("Horizontal");
         MoveOnInput(xIn);
         // TODO: Replace to particle-wise application once CD is done
         v.y = rb.velocity.y;
+        ClampVector2(v, maxOverallSpeed);
         rb.velocity = v;
 
         if (Input.GetKeyUp(KeyCode.Space)) Jump();
@@ -156,6 +162,30 @@ public class PlayerController : MonoBehaviour
         return Mathf.Abs(val) > Mathf.Abs(maxVal) ? Mathf.Sign(val) * Mathf.Abs(maxVal) : val;
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        ContactPoint2D[] contacts = new ContactPoint2D[collision.contactCount];
+        collision.GetContacts(contacts);
+        float minContactDist = Mathf.Infinity;
+        foreach (ContactPoint2D contact in contacts)
+        {
+            float contactDist = (contact.point - Pos2D()).magnitude;
+            float surfAng = Mathf.Acos(Vector2.Dot(contact.normal, Vector2.up)) * Mathf.Rad2Deg;
+            if (Mathf.Abs(surfAng) <= 75 && contactDist <= radius + 0.01f)
+            {
+                canJump = true;
+            }
+
+            minContactDist = (minContactDist > contactDist) ? contactDist : minContactDist;
+        }
+
+        if (sticky && minContactDist < stickDistance + radius)
+        {
+            rb.constraints = rbStuck;
+            v = new Vector2();
+        }
+    }
+
     private void OnCollisionStay2D(Collision2D collision)
     {
         ContactPoint2D[] contacts = new ContactPoint2D[collision.contactCount];
@@ -163,20 +193,20 @@ public class PlayerController : MonoBehaviour
         float minContactDist = Mathf.Infinity;
         foreach (ContactPoint2D contact in contacts)
         {
+            float contactDist = (contact.point - Pos2D()).magnitude;
             float surfAng = Mathf.Acos(Vector2.Dot(contact.normal, Vector2.up))* Mathf.Rad2Deg;
-            if (Mathf.Abs(surfAng) <= 75)
+            if (Mathf.Abs(surfAng) <= 75 && contactDist <= radius + 0.01f)
             {
                 canJump = true;
             }
 
-            float contactDist = (contact.point - Pos2D()).magnitude;
             minContactDist = (minContactDist > contactDist) ? contactDist : minContactDist;
         }
 
         if (sticky && minContactDist < stickDistance + radius)
         {
             rb.constraints = rbStuck;
-            rb.velocity = new Vector2();
+            v = new Vector2();
         }
     }
 
@@ -189,15 +219,21 @@ public class PlayerController : MonoBehaviour
                 RaycastHit2D contact = Physics2D.CircleCast(transform.position, radius, rb.velocity, 1.0f, ~LayerMask.GetMask("Player"));
                 if (contact.collider != null)
                 {
-                    float vMag = rb.velocity.magnitude;
+                    float vMag = v.magnitude;
                     if (vMag > moveThreshold)
                     {
                         Vector2 nNorm = contact.normal.normalized;
-                        Vector2 vNorm = rb.velocity.normalized;
+                        Vector2 vNorm = v.normalized;
                         Vector2 r = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
                         r = r * vMag;
                         v = r;
-                        rb.velocity = r;
+                        //rb.velocity = r;
+                        float contactDist = (contact.point - Pos2D()).magnitude;
+                        float surfAng = Mathf.Acos(Vector2.Dot(contact.normal, Vector2.up)) * Mathf.Rad2Deg;
+                        if (Mathf.Abs(surfAng) <= 75 && contactDist <= radius + 0.01f)
+                        {
+                            canJump = true;
+                        }
                     }
                 }
             }
@@ -218,7 +254,7 @@ public class PlayerController : MonoBehaviour
 
     void StillCollisionResolution()
     {
-        RaycastHit2D contact = Physics2D.CircleCast(transform.position, transform.lossyScale.x * 0.5f, rb.velocity, 10.0f, ~LayerMask.GetMask("Player"));
+        RaycastHit2D contact = Physics2D.CircleCast(transform.position, transform.lossyScale.x * 0.5f, v, 10.0f, ~LayerMask.GetMask("Player"));
         if (contact.collider != null)
         {
             Vector2 toContact = new Vector2(transform.position.x, transform.position.y) - contact.point;
@@ -228,7 +264,14 @@ public class PlayerController : MonoBehaviour
                 Vector2 normalPerp = new Vector2(-contact.normal.y, contact.normal.x);
                 float vAlongNormPerp = Vector2.Dot(normalPerp, v);
                 v = normalPerp * vAlongNormPerp;
-                rb.velocity = v;
+                //rb.velocity = v;
+                float contactDist = (contact.point - Pos2D()).magnitude;
+                float surfAng = Mathf.Acos(Vector2.Dot(contact.normal, Vector2.up)) * Mathf.Rad2Deg;
+                Debug.Log(canJump);
+                if (Mathf.Abs(surfAng) <= 75)
+                {
+                    canJump = true;
+                }
             }
         }
     }
@@ -241,5 +284,10 @@ public class PlayerController : MonoBehaviour
     Vector2 Pos2D()
     {
         return new Vector2(transform.position.x, transform.position.y);
+    }
+
+    Vector2 ClampVector2( Vector2 v, float maxVal )
+    {
+        return (v.magnitude > maxVal) ? v.normalized * maxVal : v;
     }
 }
