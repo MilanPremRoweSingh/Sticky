@@ -57,6 +57,11 @@ public class RigidPlayerPhysics : MonoBehaviour
         f += addedF;
     }
 
+    public void ApplyImpulse(Vector2 velToAdd)
+    {
+        f += velToAdd * mass / Time.fixedDeltaTime;
+    }
+
     private void DetectCollision()
     {
         RaycastHit2D hit = Physics2D.CircleCast(transform.position, radius, v.normalized, 1e-3f, ~LayerMask.GetMask("Player"));
@@ -79,7 +84,6 @@ public class RigidPlayerPhysics : MonoBehaviour
         Vector2 vNorm = v.normalized;
         Vector2 r = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
         r = r * v.magnitude * restitution;
-        //v = r;
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 df = f - Vector2.Dot(nNorm, f) * nNorm;
