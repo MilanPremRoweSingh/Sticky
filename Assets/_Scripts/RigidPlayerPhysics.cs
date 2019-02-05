@@ -20,10 +20,10 @@ public class RigidPlayerPhysics : MonoBehaviour
     private float radius;
 
     // Velocity
-    private Vector3 v = new Vector3();
+    private Vector2 v = new Vector3();
 
     // Force Accumulator
-    private Vector3 f = new Vector3();
+    private Vector2 f = new Vector3();
 
     // Start is called before the first frame update
     void Start()
@@ -40,18 +40,18 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void ApplyGravity()
     {
-        AddForce(Vector3.down * baseGravity * gravityScale);
+        AddForce(Vector2.down * baseGravity * gravityScale);
     }
 
     private void MovementUpdate()
     {
         v += f * Time.fixedDeltaTime / mass;
-        transform.position += v * Time.fixedDeltaTime;
+        transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
         f = new Vector3();
     }
 
-    public void AddForce( Vector3 addedF )
+    public void AddForce( Vector2 addedF )
     {
         addedF.z = 0;
         f += addedF;
@@ -81,9 +81,11 @@ public class RigidPlayerPhysics : MonoBehaviour
         r = r * v.magnitude * restitution;
         v = r;
 
+        Vector2 dv = r - v;
+
+
         // Calculate Force acting on body from contact resisting current forces on body (N3)
-        Vector2 f2d = new Vector2(f.x, f.y);
-        Vector2 df = f2d - Vector2.Dot(nNorm, f) * nNorm;
+        Vector2 df = f - Vector2.Dot(nNorm, f) * nNorm;
         f.x -= df.x;
         f.y -= df.y;
     }
@@ -102,4 +104,5 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         return new Vector2(transform.position.x, transform.position.y);
     }
+
 }
