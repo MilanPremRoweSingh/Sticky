@@ -53,7 +53,6 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     public void AddForce( Vector2 addedF )
     {
-        addedF.z = 0;
         f += addedF;
     }
 

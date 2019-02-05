@@ -444,7 +444,7 @@ MonoBehaviour:
   maxOverallSpeed: 10
   gravityScale: 2.5
   mass: 1
-  restitution: 1
+  restitution: 0.53
 --- !u!114 &125307221
 MonoBehaviour:
   m_ObjectHideFlags: 0
