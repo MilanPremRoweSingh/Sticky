@@ -34,8 +34,8 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void FixedUpdate()
     {
-        ApplyGravity();
         MovementUpdate();
+        ApplyGravity();
     }
 
     private void ApplyGravity()
@@ -59,7 +59,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void DetectCollision()
     {
-        RaycastHit2D hit = Physics2D.CircleCast(transform.position, radius, v.normalized, 1e-3f, LayerMask.GetMask("Player"));
+        RaycastHit2D hit = Physics2D.CircleCast(transform.position, radius, v.normalized, 1e-3f, ~LayerMask.GetMask("Player"));
         if (hit.collider)
         {
             ResolveCollision(hit);
@@ -69,7 +69,22 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void ResolveCollision(RaycastHit2D hit)
     {
+        Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
+        penDepth =(Pos2D() - hit.point) - penDepth;
+        Debug.Log(penDepth);
+        transform.Translate(-penDepth);
 
+
+        Vector2 nNorm = hit.normal.normalized;
+        Vector2 vNorm = v.normalized;
+        Vector2 r = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
+        r = r * v.magnitude * restitution;
+        v = r;
+
+        Vector2 f2d = new Vector2(f.x, f.y);
+        Vector2 df = f2d - Vector2.Dot(nNorm, f) * nNorm;
+        f.x -= df.x;
+        f.y -= df.y;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -79,5 +94,11 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D other)
     {
+        DetectCollision();
+    }
+
+    public Vector2 Pos2D()
+    {
+        return new Vector2(transform.position.x, transform.position.y);
     }
 }
