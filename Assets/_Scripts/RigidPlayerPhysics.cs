@@ -69,18 +69,19 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void ResolveCollision(RaycastHit2D hit)
     {
+        // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
-        penDepth =(Pos2D() - hit.point) - penDepth;
-        Debug.Log(penDepth);
-        transform.Translate(-penDepth);
+        penDepth = penDepth - (Pos2D() - hit.point) ;
+        transform.Translate(penDepth);
 
-
+        // Calculate Velocity Due to bounce
         Vector2 nNorm = hit.normal.normalized;
         Vector2 vNorm = v.normalized;
         Vector2 r = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
         r = r * v.magnitude * restitution;
         v = r;
 
+        // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 f2d = new Vector2(f.x, f.y);
         Vector2 df = f2d - Vector2.Dot(nNorm, f) * nNorm;
         f.x -= df.x;
