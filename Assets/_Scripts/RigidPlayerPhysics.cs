@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class RigidPlayerPhysics : MonoBehaviour
@@ -31,7 +32,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Assume the player is a circle 
         radius = Mathf.Max(transform.localScale.x, transform.localScale.y) * 0.5f;
     }
-
+    
     private void FixedUpdate()
     {
         MovementUpdate();
@@ -78,15 +79,16 @@ public class RigidPlayerPhysics : MonoBehaviour
         Vector2 vNorm = v.normalized;
         Vector2 r = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
         r = r * v.magnitude * restitution;
-        v = r;
-
-        Vector2 dv = r - v;
-
+        //v = r;
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 df = f - Vector2.Dot(nNorm, f) * nNorm;
-        f.x -= df.x;
-        f.y -= df.y;
+        f -= df;
+
+        // Calculate force required to created desired impulse over one fixedUpdate call
+        Vector2 dv = r - v;
+        float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
+        f += forceMagForImpulse * r.normalized; 
     }
 
     private void OnTriggerEnter2D(Collider2D other)
