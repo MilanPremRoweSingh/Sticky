@@ -429,6 +429,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a126744da4dd51b47a9865b897fea6c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  turnDecc: 45
+  stopDecc: 60
+  startAcc: 30
+  moveThreshold: 0.05
 --- !u!114 &125307220
 MonoBehaviour:
   m_ObjectHideFlags: 0

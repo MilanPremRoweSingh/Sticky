@@ -5,7 +5,13 @@ using UnityEngine;
 
 public class RigidPlayerPhysics : MonoBehaviour
 {
+    // Threshold for horiz input to be considered
+    [Range(1e-6f, 0.5f)]
+    public float moveThreshold;
+
     public float maxOverallSpeed;
+
+    public float maxHorizSpeed;
 
     public float gravityScale;
 
@@ -16,7 +22,6 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Bounce Resitition
     [Range(0, 1)]
     public float restitution;
-
 
     private float radius;
 
@@ -47,6 +52,10 @@ public class RigidPlayerPhysics : MonoBehaviour
     private void MovementUpdate()
     {
         v += f * Time.fixedDeltaTime / mass;
+
+        //v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
+        //v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
+
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
         f = new Vector3();
@@ -76,14 +85,15 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
-        penDepth = penDepth - (Pos2D() - hit.point) ;
+        penDepth = penDepth - (Pos2D() - hit.point);
         transform.Translate(penDepth);
 
         // Calculate Velocity Due to bounce
         Vector2 nNorm = hit.normal.normalized;
         Vector2 vNorm = v.normalized;
-        Vector2 r = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
-        r = r * v.magnitude * restitution;
+        Vector2 rNorm = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
+        rNorm.Normalize();
+        Vector2 r = rNorm * v.magnitude * restitution;
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 df = f - Vector2.Dot(nNorm, f) * nNorm;
@@ -92,7 +102,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Calculate force required to created desired impulse over one fixedUpdate call
         Vector2 dv = r - v;
         float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
-        f += forceMagForImpulse * r.normalized; 
+        f += forceMagForImpulse * rNorm; 
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -108,6 +118,11 @@ public class RigidPlayerPhysics : MonoBehaviour
     public Vector2 Pos2D()
     {
         return new Vector2(transform.position.x, transform.position.y);
+    }
+
+    public Vector2 CurrentVel()
+    {
+        return v;
     }
 
 }
