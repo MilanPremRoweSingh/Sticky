@@ -37,7 +37,11 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Assume the player is a circle 
         radius = Mathf.Max(transform.localScale.x, transform.localScale.y) * 0.5f;
     }
-    
+
+    private void Update()
+    {
+    }
+
     private void FixedUpdate()
     {
         MovementUpdate();
@@ -53,12 +57,12 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         v += f * Time.fixedDeltaTime / mass;
 
-        //v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
-        //v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
+        v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
+        v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
 
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
-        f = new Vector3();
+        f = Vector2.zero;
     }
 
     public void AddForce( Vector2 addedF )

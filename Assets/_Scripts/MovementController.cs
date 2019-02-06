@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class MovementController : MonoBehaviour
 {
+    public float speed;
+
     // Horizontal decelleration on input horiz input opposite current velocity
     public float turnDecc;
 
@@ -30,30 +32,10 @@ public class MovementController : MonoBehaviour
 
     void ImpulseMoveOnInput(float xIn)
     {
-        float moveThreshold = rpp.moveThreshold;
-
-        Vector2 v = rpp.CurrentVel();
-        Vector2 impulse = new Vector2();
-
-        xIn = Mathf.Abs(xIn) > 0.25f ? Mathf.Sign(xIn) : 0;
-        if (Mathf.Abs(xIn) > moveThreshold)
-        {
-            Debug.Log("Reading Input: " + xIn);
-            if (Mathf.Sign(xIn) == Mathf.Sign(v.x) || Mathf.Abs(v.x) < moveThreshold)
-            {
-                impulse.x += xIn * startAcc * Time.deltaTime;
-            }
-            else
-            {
-                impulse.x += xIn * turnDecc * Time.deltaTime;
-            }
-        }
-        else
-        {
-            impulse.x =  -StickyMath.MinAbs(v.x * stopDecc * Time.deltaTime, v.x);
-        }
-
-        rpp.ApplyImpulse(impulse);
+        Vector2 vCurr = rpp.CurrentVel();
+        xIn = Mathf.Sign(xIn)*Mathf.CeilToInt(Mathf.Abs(xIn));
+        Vector2 vNew = xIn * speed * Vector2.right;
+        rpp.ApplyImpulse(vNew - vCurr);
     }
 
     void ForceMoveOnInput( float xIn )
