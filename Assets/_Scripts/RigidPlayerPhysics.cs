@@ -55,8 +55,10 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void MovementUpdate()
     {
+        //Debug.Log("Force: " + f);
         v += f * Time.fixedDeltaTime / mass;
 
+        //Debug.Log("Velocity: " + v);
         v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
         v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
 
@@ -87,6 +89,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void ResolveCollision(RaycastHit2D hit)
     {
+        Debug.Log(hit.collider.gameObject.name);
         // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);

@@ -320,7 +320,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!58 &125307214
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -446,9 +446,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveThreshold: 0
-  maxOverallSpeed: 10
+  maxOverallSpeed: 20
   maxHorizSpeed: 5
-  gravityScale: 0
+  gravityScale: 2.5
   mass: 1
   restitution: 0
 --- !u!114 &125307221
@@ -587,7 +587,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!58 &553252216
 CircleCollider2D:
   m_ObjectHideFlags: 0
