@@ -31,21 +31,46 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Force Accumulator
     private Vector2 f = new Vector3();
 
+    // Impulse Accumulator
+    private Vector2 impulse = new Vector2();
+
     // Start is called before the first frame update
     void Start()
     {
         // Assume the player is a circle 
         radius = Mathf.Max(transform.localScale.x, transform.localScale.y) * 0.5f;
+        lastUpdateTime = Time.time;
     }
+
+    float lastUpdateTime;
+    float deltaTime;
 
     private void Update()
     {
+        /*
+        deltaTime = Time.time - lastUpdateTime;
+        deltaTime = Time.deltaTime;
+
+        //ForceUpdate();
+        //VelocityUpdate();
+        //PositionUpdate();
+
+        //transform.Translate(new Vector3(2.0f, 0.0f) * deltaTime);
+        GetComponent<Rigidbody2D>().velocity = new Vector3(1.0f, 0.0f);
+
+        lastUpdateTime = Time.time;
+        */    
     }
 
     private void FixedUpdate()
     {
-        MovementUpdate();
+        deltaTime = Time.fixedDeltaTime;
+
+        ForceUpdate();
+        VelocityUpdate();
+        PositionUpdate();
         ApplyGravity();
+        //lastUpdateTime = Time.time;
     }
 
     private void ApplyGravity()
@@ -53,16 +78,31 @@ public class RigidPlayerPhysics : MonoBehaviour
         AddForce(Vector2.down * baseGravity * gravityScale);
     }
 
-    private void MovementUpdate()
+    private void ForceUpdate()
     {
-        v += f * Time.fixedDeltaTime / mass;
+        if (deltaTime != 0)
+        {
+            f += impulse * mass / deltaTime;
+            impulse = Vector2.zero;
+        }
+    }
 
-        v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
-        v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
+    private void VelocityUpdate()
+    {
+        if (deltaTime != 0)
+        {
+            v += f * (Time.time - lastUpdateTime) / mass;
 
-        transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
+            v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x) * maxHorizSpeed);
+            v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
 
-        f = Vector2.zero;
+            f = Vector2.zero;
+        }
+    }
+
+    private void PositionUpdate()
+    {
+        transform.position += new Vector3(v.x, v.y) * deltaTime;
     }
 
     public void AddForce( Vector2 addedF )
@@ -72,7 +112,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     public void ApplyImpulse(Vector2 velToAdd)
     {
-        f += velToAdd * mass / Time.fixedDeltaTime;
+        impulse += velToAdd;
     }
 
     private void DetectCollision()
@@ -105,7 +145,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         // Calculate force required to created desired impulse over one fixedUpdate call
         Vector2 dv = r - v;
-        float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
+        float forceMagForImpulse = dv.magnitude * mass / (Time.time - lastUpdateTime);
         f += forceMagForImpulse * rNorm; 
     }
 

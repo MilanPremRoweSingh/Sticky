@@ -26,7 +26,7 @@ public class MovementController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float xIn = Input.GetAxisRaw("Horizontal");
+        float xIn = Input.GetAxis("Horizontal");
         ImpulseMoveOnInput(xIn);
     }
 
