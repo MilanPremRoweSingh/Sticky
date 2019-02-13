@@ -8,4 +8,9 @@ public class StickyMath
     {
         return Mathf.Abs(f0) <= Mathf.Abs(f1) ? f0 : f1;
     }
+
+    public static bool InRange(float value, float min, float max)
+    {
+        return (value >= min && value <= max);
+    }
 }

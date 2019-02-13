@@ -31,6 +31,16 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Force Accumulator
     private Vector2 f = new Vector3();
 
+    // Is The Player Grounded
+    private bool isGrounded = false;
+
+    // Tracks whether the player has collided with anything since the last fixedUpdate step
+    private bool hasCollided = false;
+
+    // Used by grounding logic
+    private bool groundedByCollisions = false;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,8 +54,15 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!hasCollided)
+        {
+            isGrounded = false;
+        }
+
         MovementUpdate();
         ApplyGravity();
+
+        hasCollided = false;
     }
 
     private void ApplyGravity()
@@ -79,17 +96,27 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void DetectCollision()
     {
-        RaycastHit2D hit = Physics2D.CircleCast(transform.position, radius, v.normalized, 1e-3f, ~LayerMask.GetMask("Player"));
-        if (hit.collider)
-        {
-            ResolveCollision(hit);
-        }
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius, v.normalized, 1e-1f, ~LayerMask.GetMask("Player"));
+        hasCollided = true;
 
+        groundedByCollisions = false;
+
+        // Loop through the hits to resolve collisions, and check if any grounds the player
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider)
+            {
+                hasCollided = true;
+                groundedByCollisions |= ResolveCollision(hit);
+            }
+        }
+        Debug.Log(groundedByCollisions);
+        isGrounded = groundedByCollisions;
     }
 
-    private void ResolveCollision(RaycastHit2D hit)
+    /** Returns whether this collision grounds the player*/
+    private bool ResolveCollision(RaycastHit2D hit)
     {
-        Debug.Log(hit.collider.gameObject.name);
         // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
@@ -109,7 +136,12 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Calculate force required to created desired impulse over one fixedUpdate call
         Vector2 dv = r - v;
         float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
-        f += forceMagForImpulse * rNorm; 
+        f += forceMagForImpulse * rNorm;
+
+        // Check if this contact grounds the player
+        float normAngle = Mathf.Acos(Vector2.Dot(Vector2.right, nNorm))*Mathf.Rad2Deg;
+        return StickyMath.InRange(normAngle, 45, 135);
+            
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -131,5 +163,11 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         return v;
     }
+
+    public bool IsGrounded()
+    {
+        return isGrounded;
+    }
+
 
 }

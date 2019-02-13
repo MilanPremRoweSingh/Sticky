@@ -15,6 +15,9 @@ public class MovementController : MonoBehaviour
     // Horizontal Accelleration on input
     public float startAcc;
 
+    // Force Applied on jump
+    public float jumpForce;
+
     RigidPlayerPhysics rpp;
 
     // Start is called before the first frame update
@@ -28,6 +31,11 @@ public class MovementController : MonoBehaviour
     {
         float xIn = Input.GetAxisRaw("Horizontal");
         ImpulseMoveOnInput(xIn);
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            Jump();
+        }
     }
 
     void ImpulseMoveOnInput(float xIn)
@@ -42,5 +50,13 @@ public class MovementController : MonoBehaviour
     void ForceMoveOnInput( float xIn )
     {
 
+    }
+
+    void Jump()
+    { 
+        if( rpp.IsGrounded() )
+        {
+            rpp.AddForce(Vector2.up* jumpForce);
+        }
     }
 }
