@@ -15,6 +15,12 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     public float gravityScale;
 
+    // Friction applied horizontally when grounded
+    public float horizFriction;
+
+
+
+
     [Range(1, 10)]
     public float mass;
 
@@ -59,6 +65,7 @@ public class RigidPlayerPhysics : MonoBehaviour
             isGrounded = false;
         }
 
+        //ApplyFriction();
         MovementUpdate();
         ApplyGravity();
 
@@ -70,14 +77,25 @@ public class RigidPlayerPhysics : MonoBehaviour
         AddForce(Vector2.down * baseGravity * gravityScale);
     }
 
+    private void ApplyFriction()
+    {
+        if (isGrounded)
+        {
+            AddForce(Vector2.right * Mathf.Sign(v.x) * horizFriction);
+        }
+    }
+
     private void MovementUpdate()
     {
-        //Debug.Log("Force: " + f);
+        Debug.Log("B V: " + v);
+        Debug.Log("B F: " + f);
         v += f * Time.fixedDeltaTime / mass;
 
-        //Debug.Log("Velocity: " + v);
         v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
         v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
+
+        Debug.Log("A V: " + v);
+        Debug.Log("");
 
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
@@ -96,7 +114,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void DetectCollision()
     {
-        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius, v.normalized, 1e-1f, ~LayerMask.GetMask("Player"));
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius, v.normalized, 1e-2f, ~LayerMask.GetMask("Player"));
         hasCollided = true;
 
         groundedByCollisions = false;
@@ -110,7 +128,17 @@ public class RigidPlayerPhysics : MonoBehaviour
                 groundedByCollisions |= ResolveCollision(hit);
             }
         }
-        Debug.Log(groundedByCollisions);
+
+        // The above ensures grounding collision update isGrounded, but for collisions to still be accurate, the size of the circlecast must remain small
+        // We want isGrounded to be more generous, while not affecting collisions, so we circleCast again with a larger sweep to make it more responsive.
+        hits = Physics2D.CircleCastAll(transform.position, radius, Vector2.down, 1.0f, ~LayerMask.GetMask("Player"));
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider)
+            {
+                groundedByCollisions |= CheckCollisionForGrounding(hit);
+            }
+        }
         isGrounded = groundedByCollisions;
     }
 
@@ -120,7 +148,10 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
-        transform.Translate(penDepth);
+        if( penDepth.magnitude > 1e-2f)
+            transform.Translate(penDepth);
+        else if( hit.normal.normalized.y < 0)
+            transform.Translate(penDepth);
 
         // Calculate Velocity Due to bounce
         Vector2 nNorm = hit.normal.normalized;
@@ -130,18 +161,26 @@ public class RigidPlayerPhysics : MonoBehaviour
         Vector2 r = rNorm * v.magnitude * restitution;
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
-        Vector2 df = f - Vector2.Dot(nNorm, f) * nNorm;
+        Vector2 df = Vector2.Dot(nNorm, f) * nNorm;
         f -= df;
 
         // Calculate force required to created desired impulse over one fixedUpdate call
         Vector2 dv = r - v;
-        float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
-        f += forceMagForImpulse * rNorm;
-
+        //float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
+        //Debug.DrawLine(Pos2D(), forceMagForImpulse * rNorm + Pos2D(), StickyMath.debugColor);
+        dv = dv * mass / Time.fixedDeltaTime;
+        f += dv;
+        
         // Check if this contact grounds the player
-        float normAngle = Mathf.Acos(Vector2.Dot(Vector2.right, nNorm))*Mathf.Rad2Deg;
-        return StickyMath.InRange(normAngle, 45, 135);
+        return CheckCollisionForGrounding(hit);
             
+    }
+
+    private bool CheckCollisionForGrounding(RaycastHit2D hit)
+    {
+
+        float normAngle = Mathf.Acos(Vector2.Dot(Vector2.right, hit.normal.normalized)) * Mathf.Rad2Deg;
+        return StickyMath.InRange(normAngle, 45, 135);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

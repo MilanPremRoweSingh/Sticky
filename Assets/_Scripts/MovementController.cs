@@ -30,7 +30,10 @@ public class MovementController : MonoBehaviour
     void Update()
     {
         float xIn = Input.GetAxisRaw("Horizontal");
-        ImpulseMoveOnInput(xIn);
+        //if (Mathf.Abs(xIn) >= 0.2f)
+        {
+            ImpulseMoveOnInput(xIn);
+        }
 
         if (Input.GetKeyUp(KeyCode.Space))
         {

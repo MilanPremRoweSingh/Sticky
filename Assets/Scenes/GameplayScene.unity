@@ -450,6 +450,7 @@ MonoBehaviour:
   maxOverallSpeed: 20
   maxHorizSpeed: 5
   gravityScale: 2.5
+  horizFriction: 1
   mass: 1
   restitution: 0
 --- !u!114 &125307221
