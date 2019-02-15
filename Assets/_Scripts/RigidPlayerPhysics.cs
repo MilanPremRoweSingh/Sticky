@@ -87,16 +87,11 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void MovementUpdate()
     {
-        Debug.Log("B V: " + v);
-        Debug.Log("B F: " + f);
         v += f * Time.fixedDeltaTime / mass;
 
         v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
         v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
-
-        Debug.Log("A V: " + v);
-        Debug.Log("");
-
+        
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
         f = Vector2.zero;
@@ -155,19 +150,17 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         // Calculate Velocity Due to bounce
         Vector2 nNorm = hit.normal.normalized;
-        Vector2 vNorm = v.normalized;
-        Vector2 rNorm = vNorm - 2 * Vector2.Dot(vNorm, nNorm) * nNorm;
-        rNorm.Normalize();
-        Vector2 r = rNorm * v.magnitude * restitution;
+        Vector2 tNorm = new Vector2(-nNorm.y, nNorm.x);
+        Vector2 velAlongNorm = -1 * Vector2.Dot(nNorm, v) * nNorm * restitution;
+        Vector2 velAlongTan = Vector2.Dot(tNorm, v) * tNorm;
+        Vector2 newVel = velAlongNorm + velAlongTan;
+        Vector2 dv = newVel - v;
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 df = Vector2.Dot(nNorm, f) * nNorm;
         f -= df;
 
         // Calculate force required to created desired impulse over one fixedUpdate call
-        Vector2 dv = r - v;
-        //float forceMagForImpulse = dv.magnitude * mass / Time.fixedDeltaTime;
-        //Debug.DrawLine(Pos2D(), forceMagForImpulse * rNorm + Pos2D(), StickyMath.debugColor);
         dv = dv * mass / Time.fixedDeltaTime;
         f += dv;
         
