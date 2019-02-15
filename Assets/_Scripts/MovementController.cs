@@ -47,7 +47,8 @@ public class MovementController : MonoBehaviour
         xIn = Mathf.Sign(xIn)*Mathf.CeilToInt(Mathf.Abs(xIn));
         Vector2 impulse = xIn * speed * Vector2.right - vCurr;
         impulse.y = 0;
-        rpp.ApplyImpulse(impulse);
+        //rpp.ApplyImpulse(impulse);
+        rpp.AddForce(xIn * 1000 * Vector2.right);
     }
 
     void ForceMoveOnInput( float xIn )

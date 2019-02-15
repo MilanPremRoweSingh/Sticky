@@ -15,4 +15,5 @@ public class StickyMath
     {
         return (value >= min && value <= max);
     }
+
 }

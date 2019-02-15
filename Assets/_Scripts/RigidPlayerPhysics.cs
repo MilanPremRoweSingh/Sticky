@@ -16,7 +16,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     public float gravityScale;
 
     // Friction applied horizontally when grounded
-    public float horizFriction;
+    public float kinematicFriction;
 
 
 
@@ -77,14 +77,6 @@ public class RigidPlayerPhysics : MonoBehaviour
         AddForce(Vector2.down * baseGravity * gravityScale);
     }
 
-    private void ApplyFriction()
-    {
-        if (isGrounded)
-        {
-            AddForce(Vector2.right * Mathf.Sign(v.x) * horizFriction);
-        }
-    }
-
     private void MovementUpdate()
     {
         v += f * Time.fixedDeltaTime / mass;
@@ -109,7 +101,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void DetectCollision()
     {
-        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius, v.normalized, 1e-2f, ~LayerMask.GetMask("Player"));
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius*.98f, v.normalized, 1e-2f, ~LayerMask.GetMask("Player"));
         hasCollided = true;
 
         groundedByCollisions = false;
@@ -148,22 +140,36 @@ public class RigidPlayerPhysics : MonoBehaviour
         else if( hit.normal.normalized.y < 0)
             transform.Translate(penDepth);
 
-        // Calculate Velocity Due to bounce
+
+        // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 nNorm = hit.normal.normalized;
+        Vector2 df = Vector2.Dot(nNorm, f) * nNorm;
+        f -= df;
+
+        // Calculate Velocity Due to bounce
         Vector2 tNorm = new Vector2(-nNorm.y, nNorm.x);
         Vector2 velAlongNorm = -1 * Vector2.Dot(nNorm, v) * nNorm * restitution;
         Vector2 velAlongTan = Vector2.Dot(tNorm, v) * tNorm;
         Vector2 newVel = velAlongNorm + velAlongTan;
         Vector2 dv = newVel - v;
 
-        // Calculate Force acting on body from contact resisting current forces on body (N3)
-        Vector2 df = Vector2.Dot(nNorm, f) * nNorm;
-        f -= df;
-
         // Calculate force required to created desired impulse over one fixedUpdate call
         dv = dv * mass / Time.fixedDeltaTime;
         f += dv;
+
+        // Calculate Friction Force
+        float fAlongNorm = Vector2.Dot(f, nNorm);
+        float velTanDir = Vector2.Dot(v.normalized, tNorm);
+        Vector2 frictionForce = -1 * velTanDir * tNorm * fAlongNorm * kinematicFriction;
+        Vector2 velAfterFriction = velAlongTan + frictionForce * mass / Time.fixedDeltaTime;
+        // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
+        if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e3f, 1e3f)))
+        {
+            frictionForce = -1 * velAlongTan * mass / Time.fixedDeltaTime;
+        }
+        f += frictionForce;
         
+
         // Check if this contact grounds the player
         return CheckCollisionForGrounding(hit);
             
