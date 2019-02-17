@@ -161,11 +161,11 @@ public class RigidPlayerPhysics : MonoBehaviour
         float fAlongNorm = Vector2.Dot(f, nNorm);
         float velTanDir = Vector2.Dot(v.normalized, tNorm);
         Vector2 frictionForce = -1 * velTanDir * tNorm * fAlongNorm * kinematicFriction;
-        Vector2 velAfterFriction = velAlongTan + frictionForce * mass / Time.fixedDeltaTime;
+        Vector2 velAfterFriction = velAlongTan + frictionForce * Time.fixedDeltaTime / mass;
         // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
-        if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e3f, 1e3f)))
+        if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e-3f, 1e-3f)))
         {
-            frictionForce = -1 * velAlongTan * mass / Time.fixedDeltaTime;
+            frictionForce = -0.5f * velAlongTan * mass / Time.fixedDeltaTime;
         }
         f += frictionForce;
         
