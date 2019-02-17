@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
+// Must be order so it runs before anything which changes forces/velocity/acceleration
 public class RigidPlayerPhysics : MonoBehaviour
 {
     // Threshold for horiz input to be considered
@@ -18,9 +19,6 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Friction applied horizontally when grounded
     public float kinematicFriction;
 
-
-
-
     [Range(1, 10)]
     public float mass;
 
@@ -32,10 +30,13 @@ public class RigidPlayerPhysics : MonoBehaviour
     private float radius;
 
     // Velocity
-    private Vector2 v = new Vector3();
+    private Vector2 v = new Vector2();
+
+    // Acceleration - Constant acceleration, reset every frame, used for input-based movement
+    private Vector2 a = new Vector2();
 
     // Force Accumulator
-    private Vector2 f = new Vector3();
+    private Vector2 f = new Vector2();
 
     // Is The Player Grounded
     private bool isGrounded = false;
@@ -56,6 +57,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void Update()
     {
+        a = Vector2.zero;
     }
 
     private void FixedUpdate()
@@ -65,11 +67,16 @@ public class RigidPlayerPhysics : MonoBehaviour
             isGrounded = false;
         }
 
-        //ApplyFriction();
+        ForceUpdate();
         MovementUpdate();
         ApplyGravity();
 
         hasCollided = false;
+    }
+
+    private void ForceUpdate()
+    {
+        f += mass * a;
     }
 
     private void ApplyGravity()
@@ -92,6 +99,11 @@ public class RigidPlayerPhysics : MonoBehaviour
     public void AddForce( Vector2 addedF )
     {
         f += addedF;
+    }
+
+    public void SetAcceleration( Vector2 newAcc )
+    {
+        a = newAcc;
     }
 
     public void ApplyImpulse(Vector2 velToAdd)
@@ -160,7 +172,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Calculate Friction Force
         float fAlongNorm = Vector2.Dot(f, nNorm);
         float velTanDir = Vector2.Dot(v.normalized, tNorm);
-        Vector2 frictionForce = -1 * velTanDir * tNorm * fAlongNorm * kinematicFriction;
+        Vector2 frictionForce = -1 * velTanDir * tNorm * (gravityScale*baseGravity*mass) * kinematicFriction;
         Vector2 velAfterFriction = velAlongTan + frictionForce * Time.fixedDeltaTime / mass;
         // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
         if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e-3f, 1e-3f)))

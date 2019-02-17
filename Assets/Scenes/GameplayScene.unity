@@ -432,7 +432,7 @@ MonoBehaviour:
   speed: 4
   turnDecc: 45
   stopDecc: 60
-  startAcc: 30
+  startAcc: 55
   jumpForce: 1000
 --- !u!114 &125307220
 MonoBehaviour:
@@ -450,7 +450,7 @@ MonoBehaviour:
   maxOverallSpeed: 20
   maxHorizSpeed: 5
   gravityScale: 2.5
-  kinematicFriction: 1.8
+  kinematicFriction: 4.5
   mass: 1
   restitution: 0
 --- !u!114 &125307221

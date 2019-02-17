@@ -12,7 +12,7 @@ public class MovementController : MonoBehaviour
     // Horizontal decelleration on no input
     public float stopDecc;
 
-    // Horizontal Accelleration on input
+    // Horizontal move force on input
     public float startAcc;
 
     // Force Applied on jump
@@ -32,7 +32,7 @@ public class MovementController : MonoBehaviour
         float xIn = Input.GetAxisRaw("Horizontal");
         //if (Mathf.Abs(xIn) >= 0.2f)
         {
-            ImpulseMoveOnInput(xIn);
+            AccelerateOnInput(xIn);
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
@@ -47,13 +47,14 @@ public class MovementController : MonoBehaviour
         xIn = Mathf.Sign(xIn)*Mathf.CeilToInt(Mathf.Abs(xIn));
         Vector2 impulse = xIn * speed * Vector2.right - vCurr;
         impulse.y = 0;
-        //rpp.ApplyImpulse(impulse);
-        rpp.AddForce(xIn * 1000 * Vector2.right);
+        rpp.ApplyImpulse(impulse);
     }
 
-    void ForceMoveOnInput( float xIn )
+    void AccelerateOnInput(float xIn)
     {
-
+        xIn = Mathf.Sign(xIn) * Mathf.CeilToInt(Mathf.Abs(xIn));
+        Vector2 acc = xIn * startAcc * Vector2.right;
+        rpp.SetAcceleration(acc);
     }
 
     void Jump()
