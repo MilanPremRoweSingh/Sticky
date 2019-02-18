@@ -145,6 +145,8 @@ public class RigidPlayerPhysics : MonoBehaviour
     private bool ResolveCollision(RaycastHit2D hit)
     {
         // Fix interpenetration with translation
+        Vector2 hitCentroid = hit.centroid;
+
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
         if( penDepth.magnitude > 1e-2f)
@@ -172,7 +174,8 @@ public class RigidPlayerPhysics : MonoBehaviour
         // Calculate Friction Force
         float fAlongNorm = Vector2.Dot(f, nNorm);
         float velTanDir = Vector2.Dot(v.normalized, tNorm);
-        Vector2 frictionForce = -1 * velTanDir * tNorm * (gravityScale*baseGravity*mass) * kinematicFriction;
+        float nForceDueToGravity = -Vector2.Dot(nNorm,(gravityScale * baseGravity * mass) * Vector2.down);
+        Vector2 frictionForce = -1 * velTanDir * tNorm * nForceDueToGravity * kinematicFriction;
         Vector2 velAfterFriction = velAlongTan + frictionForce * Time.fixedDeltaTime / mass;
         // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
         if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e-3f, 1e-3f)))
