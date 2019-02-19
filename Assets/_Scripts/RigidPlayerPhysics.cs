@@ -10,6 +10,10 @@ public class RigidPlayerPhysics : MonoBehaviour
     [Range(1e-6f, 0.5f)]
     public float moveThreshold;
 
+    // Velocity dropoff in air when acceleration is 0. Effect: (v.x = airSlowdown*v.x) every second, achieved with a force
+    [Range(0.0f, 5.0f)]
+    public float airSlowdown;
+
     public float maxOverallSpeed;
 
     public float maxHorizSpeed;
@@ -47,7 +51,6 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Used by grounding logic
     private bool groundedByCollisions = false;
 
-
     // Start is called before the first frame update
     void Start()
     {
@@ -67,14 +70,24 @@ public class RigidPlayerPhysics : MonoBehaviour
             isGrounded = false;
         }
 
-        ForceUpdate();
+        AirControlForceUpdate();
+        AccelerationForceUpdate();
         MovementUpdate();
         ApplyGravity();
 
         hasCollided = false;
     }
 
-    private void ForceUpdate()
+    private void AirControlForceUpdate()
+    {
+        if (a.magnitude < 1e-3f && !isGrounded)
+        {
+            float deltaVx = - v.x * airSlowdown*Time.fixedDeltaTime;
+            ApplyImpulse(Vector2.right * deltaVx);
+        }
+    }
+
+    private void AccelerationForceUpdate()
     {
         f += mass * a;
     }

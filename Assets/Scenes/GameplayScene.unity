@@ -447,6 +447,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveThreshold: 0
+  airSlowdown: 1.5
   maxOverallSpeed: 20
   maxHorizSpeed: 5
   gravityScale: 2.5
