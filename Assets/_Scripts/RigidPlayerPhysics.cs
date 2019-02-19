@@ -126,10 +126,10 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void DetectCollision()
     {
-        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius*.98f, v.normalized, 1e-2f, ~LayerMask.GetMask("Player"));
         hasCollided = true;
-
         groundedByCollisions = false;
+
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius*.98f, v.normalized, 1e-2f, ~LayerMask.GetMask("Player"));
 
         // Loop through the hits to resolve collisions, and check if any grounds the player
         foreach (RaycastHit2D hit in hits)

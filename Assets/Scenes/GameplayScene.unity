@@ -466,6 +466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46f0ce55b84e2f2499773f720bfd2476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useRawAxisInput: 1
 --- !u!1 &501509273
 GameObject:
   m_ObjectHideFlags: 0
