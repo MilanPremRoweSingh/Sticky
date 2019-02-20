@@ -43,9 +43,11 @@ public class RigidPlayerPhysics : MonoBehaviour
     private Vector2 f = new Vector2();
 
     // Ground Tangent = move direction on input when grounded
+    private Vector2 groundTangent = new Vector2();
 
     // Is The Player Grounded
     private bool isGrounded = false;
+
 
     // Tracks whether the player has collided with anything since the last fixedUpdate step
     private bool hasCollided = false;
@@ -118,7 +120,22 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     public void SetAcceleration( Vector2 newAcc )
     {
-        a = newAcc;
+        if (isGrounded)
+        {
+            if (Vector2.Dot(newAcc, groundTangent) > 0)
+            {
+                a = newAcc.magnitude * groundTangent;
+            }
+            else
+            {
+                a = -1 * newAcc.magnitude * groundTangent;
+            }
+
+        }
+        else
+        {
+            a = newAcc;
+        }
     }
 
     public void ApplyImpulse(Vector2 velToAdd)
@@ -158,6 +175,7 @@ public class RigidPlayerPhysics : MonoBehaviour
                 if (groundedByCollision)
                 {
                     groundedByCollisions = true;
+                    groundTangent = new Vector2(-hit.normal.y, hit.normal.x);
                 }
 
             }
@@ -207,10 +225,15 @@ public class RigidPlayerPhysics : MonoBehaviour
             frictionForce = -0.5f * velAlongTan * mass / Time.fixedDeltaTime;
         }
         f += frictionForce;
-        
+
 
         // Check if this contact grounds the player
-        return CheckCollisionForGrounding(hit);
+        bool isGroundedByCollision = CheckCollisionForGrounding(hit);
+        if (isGroundedByCollision)
+        {
+            groundTangent = new Vector2(-hit.normal.y, hit.normal.x);
+        }
+        return isGroundedByCollision;
             
     }
 

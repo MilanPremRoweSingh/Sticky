@@ -18,12 +18,12 @@ public class MovementController : MonoBehaviour
     // Force Applied on jump
     public float jumpForce;
 
-    RigidPlayerPhysics rpp;
+    // Player physics script
+    public RigidPlayerPhysics rpp;
 
     // Start is called before the first frame update
     void Start()
     {
-        rpp = GetComponent<RigidPlayerPhysics>();
     }
 
     public void ImpulseMoveOnInput(float xIn)
@@ -31,7 +31,7 @@ public class MovementController : MonoBehaviour
         Vector2 vCurr = rpp.CurrentVel();
         xIn = Mathf.Sign(xIn)*Mathf.CeilToInt(Mathf.Abs(xIn));
         Vector2 impulse = xIn * speed * Vector2.right - vCurr;
-        impulse.y = 0;
+        impulse.y = 0.0f;
         rpp.ApplyImpulse(impulse);
     }
 

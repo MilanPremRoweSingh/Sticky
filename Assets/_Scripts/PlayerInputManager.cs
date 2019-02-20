@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerInputManager : MonoBehaviour
 {
     
-    public static MovementController moveController;
+    public MovementController moveController;
 
     // Determines wheter Input.GetAxis or Input.GetAxisRaw is used
     public bool useRawAxisInput;
@@ -51,11 +51,8 @@ public class PlayerInputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        moveController = GetComponent<MovementController>();
-        InitialiseMappings();
+        moveController = GetComponent<MovementController>();        InitialiseMappings();
     }
-
-
 
     // Update is called once per frame
     void Update()
