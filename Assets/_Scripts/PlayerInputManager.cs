@@ -14,9 +14,9 @@ public class PlayerInputManager : MonoBehaviour
     private delegate void AxisInputFunction(float axis);
     private delegate void KeyInputFunction();
 
-    Dictionary<KeyCode, KeyInputFunction> keyUpMappings;
-    Dictionary<KeyCode, KeyInputFunction> keyHeldMappings;
-    Dictionary<KeyCode, KeyInputFunction> keyDownMappings;
+    Dictionary<string, KeyInputFunction> keyUpMappings;
+    Dictionary<string, KeyInputFunction> keyHeldMappings;
+    Dictionary<string, KeyInputFunction> keyDownMappings;
     Dictionary<string, AxisInputFunction> axisMappings;
 
     // Put default mappings in here, must be called in start
@@ -24,15 +24,15 @@ public class PlayerInputManager : MonoBehaviour
     {
         if (moveController != null)
         {
-            keyUpMappings = new Dictionary<KeyCode, KeyInputFunction>()
+            keyUpMappings = new Dictionary<string, KeyInputFunction>()
             {
             };
-            keyHeldMappings = new Dictionary<KeyCode, KeyInputFunction>()
+            keyHeldMappings = new Dictionary<string, KeyInputFunction>()
             {
             };
-            keyDownMappings = new Dictionary<KeyCode, KeyInputFunction>()
+            keyDownMappings = new Dictionary<string, KeyInputFunction>()
             {
-                { KeyCode.Space, moveController.Jump }
+                { "space", moveController.Jump }
             };
             axisMappings = new Dictionary<string, AxisInputFunction>()
             {
@@ -41,9 +41,9 @@ public class PlayerInputManager : MonoBehaviour
         }
         else
         {
-            keyUpMappings = new Dictionary<KeyCode, KeyInputFunction>();
-            keyHeldMappings = new Dictionary<KeyCode, KeyInputFunction>();
-            keyDownMappings = new Dictionary<KeyCode, KeyInputFunction>();
+            keyUpMappings = new Dictionary<string, KeyInputFunction>();
+            keyHeldMappings = new Dictionary<string, KeyInputFunction>();
+            keyDownMappings = new Dictionary<string, KeyInputFunction>();
             axisMappings = new Dictionary<string, AxisInputFunction>();
         }
     }
@@ -93,15 +93,16 @@ public class PlayerInputManager : MonoBehaviour
 
     void CallKeyUpFunctions()
     {
-        foreach (KeyCode key in keyUpMappings.Keys)
+        foreach (string key in keyUpMappings.Keys)
         {
             if (Input.GetKeyUp(key)) keyUpMappings[key]();
+
         }
     }
 
     void CallKeyHeldFunctions()
     {
-        foreach (KeyCode key in keyHeldMappings.Keys)
+        foreach (string key in keyHeldMappings.Keys)
         {
             if (Input.GetKey(key)) keyHeldMappings[key]();
         }
@@ -109,7 +110,7 @@ public class PlayerInputManager : MonoBehaviour
 
     void CallKeyDownFunctions()
     {
-        foreach (KeyCode key in keyDownMappings.Keys)
+        foreach (string key in keyDownMappings.Keys)
         {
             if (Input.GetKeyDown(key)) keyDownMappings[key]();
         }

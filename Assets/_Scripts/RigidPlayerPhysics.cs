@@ -42,6 +42,8 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Force Accumulator
     private Vector2 f = new Vector2();
 
+    // Ground Tangent = move direction on input when grounded
+
     // Is The Player Grounded
     private bool isGrounded = false;
 
@@ -124,11 +126,11 @@ public class RigidPlayerPhysics : MonoBehaviour
         f += velToAdd * mass / Time.fixedDeltaTime;
     }
 
-    private void DetectCollision()
+    private void DetectCollision( Collider2D other )
     {
         hasCollided = true;
         groundedByCollisions = false;
-
+        
         RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, radius*.98f, v.normalized, 1e-2f, ~LayerMask.GetMask("Player"));
 
         // Loop through the hits to resolve collisions, and check if any grounds the player
@@ -143,12 +145,18 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         // The above ensures grounding collision update isGrounded, but for collisions to still be accurate, the size of the circlecast must remain small
         // We want isGrounded to be more generous, while not affecting collisions, so we circleCast again with a larger sweep to make it more responsive.
-        hits = Physics2D.CircleCastAll(transform.position, radius, Vector2.down, 1.0f, ~LayerMask.GetMask("Player"));
+        hits = Physics2D.CircleCastAll(Pos2D(), radius, Vector2.down, 1f, ~LayerMask.GetMask("Player"));
         foreach (RaycastHit2D hit in hits)
         {
-            if (hit.collider)
+            if (hit.collider && hit.collider == other.GetComponent<Collider2D>())
             {
-                groundedByCollisions |= CheckCollisionForGrounding(hit);
+                bool groundedByCollision = CheckCollisionForGrounding(hit);
+                if (groundedByCollision)
+                {
+                    Debug.DrawLine(Pos2D(), hit.point, Color.blue);
+                    groundedByCollisions = true;
+                }
+
             }
         }
         isGrounded = groundedByCollisions;
@@ -212,12 +220,12 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        DetectCollision();
+        DetectCollision(other);
     }
 
     private void OnTriggerStay2D(Collider2D other)
     {
-        DetectCollision();
+        DetectCollision(other);
     }
 
     public Vector2 Pos2D()
