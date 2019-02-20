@@ -26,13 +26,19 @@ public class PlayerInputManager : MonoBehaviour
         {
             keyUpMappings = new Dictionary<string, KeyInputFunction>()
             {
+                { "left shift", moveController.MakePlayerUnbouncy },
+                { "left ctrl", moveController.MakePlayerUnsticky }
             };
             keyHeldMappings = new Dictionary<string, KeyInputFunction>()
             {
+                { "left shift", moveController.MakePlayerBouncy },
+                { "left ctrl", moveController.MakePlayerSticky }
             };
             keyDownMappings = new Dictionary<string, KeyInputFunction>()
             {
-                { "space", moveController.Jump }
+                { "space", moveController.Jump },
+                { "left shift", moveController.MakePlayerBouncy },
+                { "left ctrl", moveController.MakePlayerSticky }
             };
             axisMappings = new Dictionary<string, AxisInputFunction>()
             {

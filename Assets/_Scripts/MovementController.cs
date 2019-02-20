@@ -49,4 +49,24 @@ public class MovementController : MonoBehaviour
             rpp.AddForce(Vector2.up* jumpForce);
         }
     }
+
+    public void MakePlayerBouncy()
+    {
+        rpp.restitution = 1.0f;
+    }
+
+    public void MakePlayerUnbouncy()
+    {
+        rpp.restitution = 0.0f;
+    }
+
+    public void MakePlayerSticky()
+    {
+        rpp.SetSticky(true);
+    }
+
+    public void MakePlayerUnsticky()
+    {
+        rpp.SetSticky(false);
+    }
 }

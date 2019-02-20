@@ -48,6 +48,8 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Is The Player Grounded
     private bool isGrounded = false;
 
+    // Is the player sticky
+    private bool isSticky = false;
 
     // Tracks whether the player has collided with anything since the last fixedUpdate step
     private bool hasCollided = false;
@@ -186,6 +188,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     /** Returns whether this collision grounds the player*/
     private bool ResolveCollision(RaycastHit2D hit)
     {
+        
         // Fix interpenetration with translation
         Vector2 hitCentroid = hit.centroid;
 
@@ -267,6 +270,11 @@ public class RigidPlayerPhysics : MonoBehaviour
     public bool IsGrounded()
     {
         return isGrounded;
+    }
+
+    public void SetSticky(bool _isSticky)
+    {
+        isSticky = _isSticky;
     }
 
 

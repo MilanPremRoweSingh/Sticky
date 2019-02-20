@@ -139,7 +139,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7423341}
   m_LocalRotation: {x: 0, y: 0, z: -0.38268343, w: 0.92387956}
-  m_LocalPosition: {x: 1.24, y: 0.84, z: 0}
+  m_LocalPosition: {x: 0.65, y: 2.45, z: 0}
   m_LocalScale: {x: 1.5, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 1177823587}
@@ -434,6 +434,7 @@ MonoBehaviour:
   stopDecc: 60
   startAcc: 55
   jumpForce: 1000
+  rpp: {fileID: 125307220}
 --- !u!114 &125307220
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,6 +467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46f0ce55b84e2f2499773f720bfd2476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveController: {fileID: 125307219}
   useRawAxisInput: 1
 --- !u!1 &501509273
 GameObject:
