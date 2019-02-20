@@ -44,10 +44,7 @@ public class PlayerController : MonoBehaviour
 
     public void Jump()
     { 
-        if( rpp.IsGrounded() )
-        {
-            rpp.AddForce(Vector2.up* jumpForce);
-        }
+        rpp.Jump(Vector2.up* jumpForce);
     }
 
     public void MakePlayerBouncy()

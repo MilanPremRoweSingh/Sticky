@@ -23,6 +23,9 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Friction applied horizontally when grounded
     public float kinematicFriction;
 
+    // Minimum Time required between 'sticks'
+    public float timeBetweenSticks; 
+
     [Range(1, 10)]
     public float mass;
 
@@ -50,6 +53,11 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     // Is the player sticky
     private bool isSticky = false;
+
+    // Is the player stuc to something
+    private bool isStuck = false;
+
+    private float lastUnstickTime;
 
     // Tracks whether the player has collided with anything since the last fixedUpdate step
     private bool hasCollided = false;
@@ -109,6 +117,8 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
         v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
+
+        v = (isStuck) ? Vector2.zero : v;
         
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
@@ -118,6 +128,19 @@ public class RigidPlayerPhysics : MonoBehaviour
     public void AddForce( Vector2 addedF )
     {
         f += addedF;
+    }
+
+    public void Jump(Vector2 jumpForce)
+    {
+        if (isStuck)
+        {
+            setStuck(false);
+            AddForce(jumpForce);
+        }
+        else if (isGrounded)
+        {
+            AddForce(jumpForce);
+        }
     }
 
     public void SetAcceleration( Vector2 newAcc )
@@ -158,7 +181,14 @@ public class RigidPlayerPhysics : MonoBehaviour
             if (hit.collider)
             {
                 hasCollided = true;
-                groundedByCollisions |= ResolveCollision(hit);
+                if (isSticky && Time.time - lastUnstickTime > timeBetweenSticks)
+                {
+                    groundedByCollisions |= ResolveCollisionSticky(hit);
+                }
+                else
+                {
+                    groundedByCollisions |= ResolveCollision(hit);
+                }
             }
         }
 
@@ -240,6 +270,22 @@ public class RigidPlayerPhysics : MonoBehaviour
             
     }
 
+    private bool ResolveCollisionSticky(RaycastHit2D hit)
+    {
+        Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
+        penDepth = penDepth - (Pos2D() - hit.point)*0.95f;
+        if (penDepth.magnitude > 1e-2f)
+            transform.Translate(penDepth);
+        else if (hit.normal.normalized.y < 0)
+            transform.Translate(penDepth);
+
+        setStuck(true);
+        lastUnstickTime = Time.time;
+        
+        return isStuck;
+
+    }
+
     private bool CheckCollisionForGrounding(RaycastHit2D hit)
     {
 
@@ -272,10 +318,26 @@ public class RigidPlayerPhysics : MonoBehaviour
         return isGrounded;
     }
 
+    public void setStuck(bool _isStuck)
+    {
+        bool wasStuck = isStuck;
+        isStuck = _isStuck;
+        if (!isStuck && wasStuck)
+        {
+            lastUnstickTime = Time.time;
+        }
+    }
+
     public void SetSticky(bool _isSticky)
     {
         isSticky = _isSticky;
+        if (isSticky)
+        {
+            restitution = 0; //Stickiness overrides bounciness 
+        }
+        else
+        {
+            setStuck(false);
+        }
     }
-
-
 }
