@@ -145,15 +145,18 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         // The above ensures grounding collision update isGrounded, but for collisions to still be accurate, the size of the circlecast must remain small
         // We want isGrounded to be more generous, while not affecting collisions, so we circleCast again with a larger sweep to make it more responsive.
+        // Also checks if object that triggers hit is intersecting the player, otherwise it will not ground
         hits = Physics2D.CircleCastAll(Pos2D(), radius, Vector2.down, 1f, ~LayerMask.GetMask("Player"));
+        Collider2D[] colObjs = Physics2D.OverlapCircleAll(Pos2D(), radius*1.05f);
         foreach (RaycastHit2D hit in hits)
         {
-            if (hit.collider && hit.collider == other.GetComponent<Collider2D>())
+            bool hitColIntersects = false;
+            foreach (Collider2D colObj in colObjs) hitColIntersects |= hit.collider && hit.collider == colObj;
+            if (hitColIntersects)
             {
                 bool groundedByCollision = CheckCollisionForGrounding(hit);
                 if (groundedByCollision)
                 {
-                    Debug.DrawLine(Pos2D(), hit.point, Color.blue);
                     groundedByCollisions = true;
                 }
 
