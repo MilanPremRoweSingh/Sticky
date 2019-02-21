@@ -103,7 +103,20 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void AccelerationForceUpdate()
     {
+        Vector2 tangent = (isGrounded) ? groundTangent : Vector2.right;
+        Vector2 velT = (Vector2.Dot(tangent, v)) * tangent;
+        Vector2 accT = (Vector2.Dot(tangent, a) * Time.fixedDeltaTime) * tangent;
+
+        if (velT.magnitude > maxHorizSpeed)
+        {
+            a = Vector2.zero;
+        }
+        else if((velT + accT).magnitude >= maxHorizSpeed)
+        {
+            a = tangent * (maxHorizSpeed - velT.magnitude) / Time.fixedDeltaTime;
+        }
         f += mass * a;
+
     }
 
     private void ApplyGravity()
@@ -115,7 +128,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         v += f * Time.fixedDeltaTime / mass;
 
-        v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
+        //v.x = StickyMath.MinAbs(v.x, Mathf.Sign(v.x)*maxHorizSpeed);
         v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
 
         v = (isStuck) ? Vector2.zero : v;
