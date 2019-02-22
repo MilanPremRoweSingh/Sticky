@@ -84,7 +84,7 @@ public class RigidPlayerPhysics : MonoBehaviour
             isGrounded = false;
         }
 
-        AirControlForceUpdate();
+        //AirControlForceUpdate();
         AccelerationForceUpdate();
         MovementUpdate();
         ApplyGravity();
@@ -103,6 +103,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void AccelerationForceUpdate()
     {
+        Debug.Log("Ax Before: " + a.x);
         Vector2 tangent = (isGrounded) ? groundTangent : Vector2.right;
         Vector2 velT = (Vector2.Dot(tangent, v)) * tangent;
         Vector2 accT = (Vector2.Dot(tangent, a) * Time.fixedDeltaTime) * tangent;
@@ -113,8 +114,9 @@ public class RigidPlayerPhysics : MonoBehaviour
         }
         else if((velT + accT).magnitude >= maxHorizSpeed)
         {
-            a = tangent * (maxHorizSpeed - velT.magnitude) / Time.fixedDeltaTime;
+            a = tangent * Mathf.Sign((Vector2.Dot(tangent, v))) * (maxHorizSpeed - velT.magnitude) / Time.fixedDeltaTime;
         }
+        Debug.Log("Ax After: " + a.x);
         f += mass * a;
 
     }
@@ -132,7 +134,9 @@ public class RigidPlayerPhysics : MonoBehaviour
         v.x = (Mathf.Abs(v.x) < moveThreshold) ? 0 : v.x;
 
         v = (isStuck) ? Vector2.zero : v;
-        
+
+        //Debug.Log("Fx: " + f.x);
+        Debug.Log("deltaVx: " + v.x);
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
 
         f = Vector2.zero;
