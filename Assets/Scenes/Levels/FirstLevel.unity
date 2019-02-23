@@ -662,6 +662,11 @@ PrefabInstance:
       propertyPath: gravityScale
       value: 2.5
       objectReference: {fileID: 0}
+    - target: {fileID: 5014881760944054939, guid: 74ac24c9edda10247924b143c8d60847,
+        type: 3}
+      propertyPath: frictionDamping
+      value: 0.5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 74ac24c9edda10247924b143c8d60847, type: 3}
 --- !u!114 &1380214137 stripped

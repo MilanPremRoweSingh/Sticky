@@ -23,6 +23,9 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Friction applied horizontally when grounded
     public float kinematicFriction;
 
+    // Damping Coefficient applied when friction would change velocity direction
+    public float frictionDamping;
+
     // Minimum Time required between 'sticks'
     public float timeBetweenSticks; 
 
@@ -103,7 +106,6 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void AccelerationForceUpdate()
     {
-        Debug.Log("Ax Before: " + a.x);
         Vector2 tangent = (isGrounded) ? groundTangent : Vector2.right;
         Vector2 velT = (Vector2.Dot(tangent, v)) * tangent;
         Vector2 accT = (Vector2.Dot(tangent, a) * Time.fixedDeltaTime) * tangent;
@@ -116,7 +118,6 @@ public class RigidPlayerPhysics : MonoBehaviour
         {
             a = tangent * Mathf.Sign((Vector2.Dot(tangent, v))) * (maxHorizSpeed - velT.magnitude) / Time.fixedDeltaTime;
         }
-        Debug.Log("Ax After: " + a.x);
         f += mass * a;
 
     }
@@ -135,10 +136,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         v = (isStuck) ? Vector2.zero : v;
 
-        //Debug.Log("Fx: " + f.x);
-        Debug.Log("deltaVx: " + v.x);
         transform.position += new Vector3(v.x, v.y) * Time.fixedDeltaTime;
-
         f = Vector2.zero;
     }
 
@@ -235,7 +233,6 @@ public class RigidPlayerPhysics : MonoBehaviour
     /** Returns whether this collision grounds the player*/
     private bool ResolveCollision(RaycastHit2D hit)
     {
-        
         // Fix interpenetration with translation
         Vector2 hitCentroid = hit.centroid;
 
@@ -263,18 +260,22 @@ public class RigidPlayerPhysics : MonoBehaviour
         dv = dv * mass / Time.fixedDeltaTime;
         f += dv;
 
+        Debug.Log(a.magnitude);
         // Calculate Friction Force
-        float fAlongNorm = Vector2.Dot(f, nNorm);
-        float velTanDir = Vector2.Dot(v.normalized, tNorm);
-        float nForceDueToGravity = -Vector2.Dot(nNorm,(gravityScale * baseGravity * mass) * Vector2.down);
-        Vector2 frictionForce = -1 * velTanDir * tNorm * nForceDueToGravity * kinematicFriction;
-        Vector2 velAfterFriction = velAlongTan + frictionForce * Time.fixedDeltaTime / mass;
-        // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
-        if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e-3f, 1e-3f)))
+        if (a.magnitude < 1e-3f)
         {
-            frictionForce = -0.5f * velAlongTan * mass / Time.fixedDeltaTime;
+            float fAlongNorm = Vector2.Dot(f, nNorm);
+            float velTanDir = Vector2.Dot(v.normalized, tNorm);
+            float nForceDueToGravity = -Vector2.Dot(nNorm, (gravityScale * baseGravity * mass) * Vector2.down);
+            Vector2 frictionForce = -1 * velTanDir * tNorm * nForceDueToGravity * kinematicFriction;
+            Vector2 velAfterFriction = velAlongTan + frictionForce * Time.fixedDeltaTime / mass;
+            // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
+            if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e-3f, 1e-3f)))
+            {
+                frictionForce = -frictionDamping * velAlongTan * mass / Time.fixedDeltaTime;
+            }
+            f += frictionForce;
         }
-        f += frictionForce;
 
 
         // Check if this contact grounds the player
