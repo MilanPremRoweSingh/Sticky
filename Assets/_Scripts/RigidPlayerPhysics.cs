@@ -20,6 +20,9 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     public float gravityScale;
 
+    // Margin allowed for collisions
+    public float collisionMargin;
+
     // Friction applied horizontally when grounded
     public float kinematicFriction;
 
@@ -238,10 +241,15 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
-        if( penDepth.magnitude > 1e-2f)
+        if (hit.normal.normalized.y < 0)
+        {
             transform.Translate(penDepth);
-        else if( hit.normal.normalized.y < 0)
-            transform.Translate(penDepth);
+        }
+        else if (penDepth.magnitude > collisionMargin)
+        {
+            transform.Translate(penDepth.normalized * (penDepth.magnitude - collisionMargin));
+        }
+        else return true;
 
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
