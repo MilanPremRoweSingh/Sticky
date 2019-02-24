@@ -6,6 +6,7 @@ TagManager:
   tags:
   - EditorMesh
   - Level
+  - LevelGeometry
   layers:
   - Default
   - TransparentFX
