@@ -90,7 +90,7 @@ public class RigidPlayerPhysics : MonoBehaviour
             isGrounded = false;
         }
 
-        //AirControlForceUpdate();
+        AirControlForceUpdate();
         AccelerationForceUpdate();
         MovementUpdate();
         ApplyGravity();
@@ -237,8 +237,6 @@ public class RigidPlayerPhysics : MonoBehaviour
     private bool ResolveCollision(RaycastHit2D hit)
     {
         // Fix interpenetration with translation
-        Vector2 hitCentroid = hit.centroid;
-
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
         if (hit.normal.normalized.y < 0)
