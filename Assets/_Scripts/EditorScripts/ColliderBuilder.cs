@@ -11,23 +11,33 @@ public class ColliderBuilder : MonoBehaviour
         foreach (Transform child in transform)
         {
             GameObject childObj = child.gameObject;
-            if (childObj.tag == tagForGeneration)
-            {
-                Collider2D coll2D = GenerateCollider2DForObject(childObj);
-            }
+            Collider2D coll2D = GenerateCollider2DForObject(childObj);
         }
     }
 
-    // Creates a PolygonCollider for the object \
+    // Creates a shitty EdgeCollider for the object with a mesh collider
     public static Collider2D GenerateCollider2DForObject(GameObject obj)
     {
-        // Ensure the obj has a mesh filter with a non-null mesh
-        MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
-        if (meshFilter == null || meshFilter.sharedMesh == null) return null;
+        MeshCollider prevColl = obj.GetComponent<MeshCollider>();
+        if (prevColl == null || prevColl.sharedMesh == null) return null;
 
-        Mesh mesh = meshFilter.sharedMesh;
 
-        return null;
+        Collider2D prevColl2D = obj.GetComponent<Collider2D>();
+        if (prevColl2D != null) DestroyImmediate(prevColl2D);
+
+        Mesh mesh = prevColl.sharedMesh;
+        
+        List<Vector2> verts = new List<Vector2>(mesh.vertexCount);
+        foreach (Vector3 vert in mesh.vertices)
+        {
+            verts.Add(new Vector2(vert.x, vert.y));
+        }
+        DestroyImmediate(prevColl);
+
+        EdgeCollider2D coll = obj.AddComponent<EdgeCollider2D>();
+        coll.points = verts.ToArray();
+
+        return coll;
     }
     
 }
