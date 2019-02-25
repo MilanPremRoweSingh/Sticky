@@ -11,9 +11,13 @@ public class ColliderBuilderEditor : Editor
         DrawDefaultInspector();
 
         ColliderBuilder myScript = (ColliderBuilder)target;
-        if (GUILayout.Button("Generate Colliders"))
+        if (GUILayout.Button("Generate 2D Colliders"))
         {
             myScript.GenerateLevelColliders();
+        }
+        if (GUILayout.Button("Generate 3D Colliders"))
+        {
+            myScript.Generate3DColliders();
         }
     }
 }

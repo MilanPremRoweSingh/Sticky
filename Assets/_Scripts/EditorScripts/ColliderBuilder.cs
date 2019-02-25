@@ -13,6 +13,16 @@ public class ColliderBuilder : MonoBehaviour
         {
             GameObject childObj = child.gameObject;
             Collider2D coll2D = GenerateCollider2DForObject(childObj);
+
+
+        }
+    }
+    public void Generate3DColliders()
+    {
+        foreach (Transform child in transform)
+        {
+            GameObject childObj = child.gameObject;
+            RecreateMeshCollider(childObj);
         }
     }
 
@@ -27,12 +37,13 @@ public class ColliderBuilder : MonoBehaviour
         if (prevColl2D != null) DestroyImmediate(prevColl2D);
 
         Mesh mesh = prevColl.sharedMesh;
-        AutoWeld(mesh, 1e-2f, 1);
+        Mesh weldedMesh = (Mesh)Instantiate(mesh);
+        AutoWeld(weldedMesh, 1e-2f, 1);
         
-        List<Vector2> verts = new List<Vector2>(mesh.vertexCount);
-        Vector3[] meshVerts = mesh.vertices;
+        List<Vector2> verts = new List<Vector2>(weldedMesh.vertexCount);
+        Vector3[] meshVerts = weldedMesh.vertices;
         Dictionary<UnorderedIndexPair, int> edges = new Dictionary<UnorderedIndexPair, int>();
-        int[] tris = mesh.GetIndices(0);
+        int[] tris = weldedMesh.GetIndices(0);
         for (int i = 0; i < tris.Length/3; i++) 
         {
             UnorderedIndexPair e0 = new UnorderedIndexPair(tris[3*i+0],tris[3*i+1]);
@@ -150,6 +161,24 @@ public class ColliderBuilder : MonoBehaviour
         mesh.RecalculateNormals();
     }
 
+    public static void RecreateMeshCollider(GameObject obj)
+    {
+        PolygonCollider2D polColl = obj.GetComponent<PolygonCollider2D>();
+        EdgeCollider2D edgeColl = obj.GetComponent<EdgeCollider2D>();
+
+        if (edgeColl == null && polColl == null) return;
+
+        if (edgeColl == null)
+        {
+            DestroyImmediate(polColl);
+        }
+        else
+        {
+            DestroyImmediate(edgeColl);
+        }
+
+        obj.AddComponent<MeshCollider>();
+    }
 
 }
 
