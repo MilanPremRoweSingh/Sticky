@@ -27,6 +27,7 @@ public class ColliderBuilder : MonoBehaviour
     }
 
     // Creates a shitty EdgeCollider for the object with a mesh collider
+    /*
     public static Collider2D GenerateCollider2DForObject(GameObject obj)
     {
         MeshCollider prevColl = obj.GetComponent<MeshCollider>();
@@ -38,7 +39,7 @@ public class ColliderBuilder : MonoBehaviour
 
         Mesh mesh = prevColl.sharedMesh;
         Mesh weldedMesh = (Mesh)Instantiate(mesh);
-        AutoWeld(weldedMesh, 1e-2f, 1);
+        //AutoWeld(weldedMesh, 1e-2f, 1);
         
         List<Vector2> verts = new List<Vector2>(weldedMesh.vertexCount);
         Vector3[] meshVerts = weldedMesh.vertices;
@@ -84,6 +85,190 @@ public class ColliderBuilder : MonoBehaviour
         coll.points = verts.ToArray();
 
         return coll;
+    }
+    */
+
+    public static Collider2D GenerateCollider2DForObject(GameObject obj)
+    {
+        MeshCollider prevColl = obj.GetComponent<MeshCollider>();
+        if (prevColl == null || prevColl.sharedMesh == null) return null;
+
+
+        Collider2D prevColl2D = obj.GetComponent<Collider2D>();
+        if (prevColl2D != null) DestroyImmediate(prevColl2D);
+
+        Mesh mesh = prevColl.sharedMesh;
+        Vector2[] verts = ProjectAndWeld(mesh, 1e-3f);
+
+        DestroyImmediate(prevColl);
+        PolygonCollider2D coll = obj.AddComponent<PolygonCollider2D>();
+        coll.points = verts;
+
+        return null;
+    }
+
+    // Only works for meshes with a single submesh
+    public static Vector2[] ProjectAndWeld(Mesh mesh, float threshold)
+    {
+        Mesh locMesh = Instantiate<Mesh>(mesh);
+        Vector3[] oldVerts = locMesh.vertices;
+        int[] oldTris = locMesh.GetIndices(0);
+
+        // Project onto xy-plane
+        for (int i = 0; i < locMesh.vertexCount; i++)
+        {
+            oldVerts[i].z = 0;
+        }
+
+        // Map oldVertices which overlap to a single vertex (edges updated after)
+        float sqrThreshold = threshold * threshold;
+        int[] newVertIndices = new int[locMesh.vertexCount];
+        Vector3[] newVerts = new Vector3[locMesh.vertexCount];
+        int numNewVerts = 0;
+        for (int i = 0; i < locMesh.vertexCount; i++)
+        {
+            bool vertOverlaps = false;
+            for (int j = 0; j < numNewVerts; j++)
+            {
+                if ((oldVerts[i] - newVerts[j]).sqrMagnitude <= sqrThreshold)
+                {
+                    newVertIndices[i] = j;
+                    vertOverlaps = true;
+                    break; // Only ever in the same position as one vert in new verts
+                }
+            }
+
+            if (!vertOverlaps)
+            {
+                newVertIndices[numNewVerts] = i;
+                newVerts[numNewVerts] = oldVerts[i];
+                numNewVerts++;
+            }
+        }
+
+        // Generate edges for new set of verts, projected on xy-plane ////
+
+        // Stores existing edges, so we don't create duplicate edges
+        HashSet<UnorderedIndexPair> edges = new HashSet<UnorderedIndexPair>();
+        for (int i = 0; i < oldTris.Length/3; i++)
+        {
+            int u, v;
+            UnorderedIndexPair uv;
+            // Handle edge 0
+            u = newVertIndices[oldTris[3*i+0]];
+            v = newVertIndices[oldTris[3*i+1]];
+            uv = new UnorderedIndexPair(u, v);
+            if (!edges.Contains(uv) && u != v)
+            {
+                edges.Add(uv);
+            }
+
+            // Handle edge 1
+            u = newVertIndices[oldTris[3*i+1]];
+            v = newVertIndices[oldTris[3*i+2]];
+            uv = new UnorderedIndexPair(u, v);
+            if (!edges.Contains(uv) && u != v)
+            {
+                edges.Add(uv);
+            }
+
+            // Handle edge 2
+            u = newVertIndices[oldTris[3*i+2]];
+            v = newVertIndices[oldTris[3*i+0]];
+            uv = new UnorderedIndexPair(u, v);
+            if (!edges.Contains(uv) && u != v)
+            {
+                edges.Add(uv);
+            }
+        }
+        ////
+
+
+        int maxXIdx = -1;
+        float maxX = Mathf.NegativeInfinity;
+        for (int i = 0; i < numNewVerts; i++)
+        {
+            if (newVerts[i].x > maxX)
+            {
+                maxXIdx = i;
+                maxX = newVerts[i].x;
+            }
+        }
+
+        float minCCWAngle = Mathf.Infinity;
+        int prevVert = -1;
+        for (int u = 0; u < numNewVerts; u++)
+        {
+            if (u == maxXIdx) continue;
+            if (edges.Contains(new UnorderedIndexPair(maxXIdx, u)))
+            {
+                Vector2 vu = newVerts[u].normalized;
+                Vector2 vv = newVerts[maxXIdx].normalized;
+
+                float angle = Vector2.SignedAngle(Vector2.up, vu-vv);
+                angle = (angle < 0) ? angle + 360 : angle;
+
+                if (angle < minCCWAngle)
+                {
+                    prevVert = u;
+                    minCCWAngle = angle;
+                }
+            }
+        }
+
+        Vector2 prevEdge = newVerts[prevVert] - newVerts[maxXIdx];
+        int prevV = prevVert;
+        List<Vector2> retVerts = new List<Vector2>();
+        retVerts.Add(newVerts[maxXIdx]);
+        int currIdx = maxXIdx;
+        int its = 0;
+        do
+        {
+            List<UnorderedIndexPair> adjEdges = new List<UnorderedIndexPair>();
+
+            int nextIdx = -1;
+            float minClockwiseAngle = Mathf.Infinity;
+            Vector2 nextPrevEdge = new Vector2();
+            Debug.Log("Start Vertex: " + newVerts[currIdx]);
+            Debug.Log("PrevEdge : " + prevEdge.normalized);
+            for (int u = 0; u < numNewVerts; u++)
+            {
+                if (u == currIdx || u == prevV) continue;
+                if (edges.Contains(new UnorderedIndexPair(currIdx, u)))
+                {
+                    Vector2 vu = newVerts[u];
+                    Vector2 vv = newVerts[currIdx];
+
+                    Vector2 currEdge = vu - vv;
+
+                    currEdge.Normalize();
+                    prevEdge.Normalize();
+
+                    //float angle = Mathf.Rad2Deg*Mathf.Atan2(currEdge.x*prevEdge.y-currEdge.y*prevEdge.x,Vector2.Dot(currEdge, prevEdge));
+                    float angle = -Vector2.SignedAngle(prevEdge, currEdge);
+                    Debug.Log("EdgeV : " + vu);
+                    Debug.Log("currEdge : " + currEdge);
+                    Debug.Log("angle : " + angle);
+                    Debug.Log("");
+                    angle = (angle < 0) ? angle + 360 : angle;
+
+                    if (angle < minClockwiseAngle && Mathf.Abs(angle) > 1e-3f )
+                    {
+                        nextPrevEdge = -currEdge;
+                        minClockwiseAngle = angle;
+                        nextIdx = u;
+                    }
+                }
+            }
+            prevV = currIdx;
+            currIdx = nextIdx;
+            prevEdge = nextPrevEdge;
+            retVerts.Add(newVerts[currIdx]);
+            its++;
+
+        } while (currIdx != maxXIdx && its < 1000);
+
+        return retVerts.ToArray();
     }
 
     public static void AutoWeld(Mesh mesh, float threshold, float bucketStep)
@@ -198,7 +383,9 @@ public class UnorderedIndexPair
 
     public override int GetHashCode()
     {
-        return (first << 16) + second;
+        int min = first < second ? first : second;
+        int max = first > second ? first : second;
+        return (min << 16) + max;
     }
 
     public UnorderedIndexPair(int _first, int _second)

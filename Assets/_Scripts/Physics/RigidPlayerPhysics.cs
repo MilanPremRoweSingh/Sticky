@@ -236,6 +236,8 @@ public class RigidPlayerPhysics : MonoBehaviour
     /** Returns whether this collision grounds the player*/
     private bool ResolveCollision(RaycastHit2D hit)
     {
+        Debug.Log("Normal: " + hit.normal);
+
         // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
@@ -266,7 +268,6 @@ public class RigidPlayerPhysics : MonoBehaviour
         dv = dv * mass / Time.fixedDeltaTime;
         f += dv;
 
-        Debug.Log(a.magnitude);
         // Calculate Friction Force
         if (a.magnitude < 1e-3f)
         {
