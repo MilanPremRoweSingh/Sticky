@@ -6,6 +6,18 @@ using UnityEditor;
 [CustomEditor(typeof(ColliderBuilder))]
 public class ColliderBuilderEditor : Editor
 {
+    public void OnSceneGUI()
+    {
+        ColliderBuilder myScript = (ColliderBuilder)target;
+        if (myScript.drawProjectedMesh && ColliderBuilder.debugEdges.Count > 0)
+        {
+            for (int i = 0; i < ColliderBuilder.debugEdges.Count; i += 2)
+            {
+                Handles.DrawLine(ColliderBuilder.debugEdges[i], ColliderBuilder.debugEdges[i + 1]);
+            }
+        }
+    }
+
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();

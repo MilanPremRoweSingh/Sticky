@@ -6,6 +6,9 @@ public class ColliderBuilder : MonoBehaviour
 {
     public string tagForGeneration;
     public static float vectorEqThreshold;
+    public bool drawProjectedMesh;
+
+    public static List<Vector3> debugEdges = new List<Vector3>();
 
     public void GenerateLevelColliders()
     {
@@ -88,6 +91,7 @@ public class ColliderBuilder : MonoBehaviour
     }
     */
 
+
     public static Collider2D GenerateCollider2DForObject(GameObject obj)
     {
         MeshCollider prevColl = obj.GetComponent<MeshCollider>();
@@ -140,7 +144,7 @@ public class ColliderBuilder : MonoBehaviour
 
             if (!vertOverlaps)
             {
-                newVertIndices[numNewVerts] = i;
+                newVertIndices[i] = numNewVerts;
                 newVerts[numNewVerts] = oldVerts[i];
                 numNewVerts++;
             }
@@ -163,6 +167,7 @@ public class ColliderBuilder : MonoBehaviour
                 edges.Add(uv);
             }
 
+
             // Handle edge 1
             u = newVertIndices[oldTris[3*i+1]];
             v = newVertIndices[oldTris[3*i+2]];
@@ -183,7 +188,13 @@ public class ColliderBuilder : MonoBehaviour
         }
         ////
 
-
+        debugEdges.Clear();
+        foreach (UnorderedIndexPair edge in edges)
+        {
+            debugEdges.Add(newVerts[edge.first]);
+            debugEdges.Add(newVerts[edge.second]);
+        }
+        
         int maxXIdx = -1;
         float maxX = Mathf.NegativeInfinity;
         for (int i = 0; i < numNewVerts; i++)
@@ -229,8 +240,6 @@ public class ColliderBuilder : MonoBehaviour
             int nextIdx = -1;
             float minClockwiseAngle = Mathf.Infinity;
             Vector2 nextPrevEdge = new Vector2();
-            Debug.Log("Start Vertex: " + newVerts[currIdx]);
-            Debug.Log("PrevEdge : " + prevEdge.normalized);
             for (int u = 0; u < numNewVerts; u++)
             {
                 if (u == currIdx || u == prevV) continue;
@@ -243,13 +252,8 @@ public class ColliderBuilder : MonoBehaviour
 
                     currEdge.Normalize();
                     prevEdge.Normalize();
-
-                    //float angle = Mathf.Rad2Deg*Mathf.Atan2(currEdge.x*prevEdge.y-currEdge.y*prevEdge.x,Vector2.Dot(currEdge, prevEdge));
+;
                     float angle = -Vector2.SignedAngle(prevEdge, currEdge);
-                    Debug.Log("EdgeV : " + vu);
-                    Debug.Log("currEdge : " + currEdge);
-                    Debug.Log("angle : " + angle);
-                    Debug.Log("");
                     angle = (angle < 0) ? angle + 360 : angle;
 
                     if (angle < minClockwiseAngle && Mathf.Abs(angle) > 1e-3f )
@@ -266,7 +270,7 @@ public class ColliderBuilder : MonoBehaviour
             retVerts.Add(newVerts[currIdx]);
             its++;
 
-        } while (currIdx != maxXIdx && its < 1000);
+        } while (currIdx != maxXIdx && its < 100000);
 
         return retVerts.ToArray();
     }
