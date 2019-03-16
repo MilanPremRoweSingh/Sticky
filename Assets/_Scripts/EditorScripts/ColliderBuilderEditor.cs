@@ -11,9 +11,12 @@ public class ColliderBuilderEditor : Editor
         ColliderBuilder myScript = (ColliderBuilder)target;
         if (myScript.drawProjectedMesh && ColliderBuilder.debugEdges.Count > 0)
         {
-            for (int i = 0; i < ColliderBuilder.debugEdges.Count; i += 2)
+            foreach (List<Vector3> debugShape in ColliderBuilder.debugEdges)
             {
-                Handles.DrawLine(ColliderBuilder.debugEdges[i], ColliderBuilder.debugEdges[i + 1]);
+                for (int i = 0; i < debugShape.Count; i += 2)
+                {
+                    Handles.DrawLine(debugShape[i], debugShape[i + 1]);
+                }
             }
         }
     }
@@ -30,6 +33,10 @@ public class ColliderBuilderEditor : Editor
         if (GUILayout.Button("Generate 3D Colliders"))
         {
             myScript.Generate3DColliders();
+        }
+        if (GUILayout.Button("Clear Debug Shapes"))
+        {
+            myScript.ClearDebugShapes();
         }
     }
 }

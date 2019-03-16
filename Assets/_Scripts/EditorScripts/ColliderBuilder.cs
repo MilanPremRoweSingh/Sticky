@@ -8,7 +8,7 @@ public class ColliderBuilder : MonoBehaviour
     public static float vectorEqThreshold;
     public bool drawProjectedMesh;
 
-    public static List<Vector3> debugEdges = new List<Vector3>();
+    public static List<List<Vector3>> debugEdges = new List<List<Vector3>>();
 
     public void GenerateLevelColliders()
     {
@@ -92,6 +92,11 @@ public class ColliderBuilder : MonoBehaviour
     */
 
 
+    public void ClearDebugShapes()
+    {
+        debugEdges.Clear();
+    }
+
     public static Collider2D Generate2DCollidersForObject(GameObject obj)
     {
         MeshCollider prevColl = obj.GetComponent<MeshCollider>();
@@ -103,7 +108,7 @@ public class ColliderBuilder : MonoBehaviour
 
 
         Mesh mesh = prevColl.sharedMesh;
-        List<Vector2> verts = new List<Vector2>(ProjectAndWeld(mesh, 1e-3f));
+        List<Vector2> verts = new List<Vector2>(ProjectAndWeld(obj, mesh, 1e-3f));
 
         List<List<Vector2>> convexParts = BayazitDecomposer.ConvexPartition(verts);
 
@@ -141,7 +146,7 @@ public class ColliderBuilder : MonoBehaviour
     }
 
     // Only works for meshes with a single submesh
-    public static Vector2[] ProjectAndWeld(Mesh mesh, float threshold)
+    public static Vector2[] ProjectAndWeld(GameObject obj, Mesh mesh, float threshold)
     {
         Mesh locMesh = Instantiate<Mesh>(mesh);
         Vector3[] oldVerts = locMesh.vertices;
@@ -217,12 +222,17 @@ public class ColliderBuilder : MonoBehaviour
         }
         ////
 
-        debugEdges.Clear();
+        List<Vector3> projectedEdges = new List<Vector3>();
         foreach (UnorderedIndexPair edge in edges)
         {
-            debugEdges.Add(newVerts[edge.first]);
-            debugEdges.Add(newVerts[edge.second]);
+            Vector3 u = obj.transform.TransformVector(newVerts[edge.first]);
+            u += obj.transform.position;
+            Vector3 v = obj.transform.TransformVector(newVerts[edge.second]);
+            v += obj.transform.position;
+            projectedEdges.Add(u);
+            projectedEdges.Add(v);
         }
+        debugEdges.Add(projectedEdges);
         
         int maxXIdx = -1;
         float maxX = Mathf.NegativeInfinity;
