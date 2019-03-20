@@ -252,10 +252,12 @@ public class ColliderBuilder : MonoBehaviour
             if (u == maxXIdx) continue;
             if (edges.Contains(new UnorderedIndexPair(maxXIdx, u)))
             {
-                Vector2 vu = newVerts[u].normalized;
-                Vector2 vv = newVerts[maxXIdx].normalized;
+                Vector2 vu = newVerts[u];
+                Vector2 vv = newVerts[maxXIdx];
+                Vector2 uv = vu - vv;
+                uv.Normalize();
 
-                float angle = Vector2.SignedAngle(Vector2.up, vu-vv);
+                float angle = Vector2.SignedAngle(Vector2.up, uv);
                 angle = (angle < 0) ? angle + 360 : angle;
 
                 if (angle < minCCWAngle)
