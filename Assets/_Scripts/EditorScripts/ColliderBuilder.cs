@@ -145,7 +145,7 @@ public class ColliderBuilder : MonoBehaviour
         return null;
     }
 
-    // Only works for meshes with a single submesh
+    // Only works for meshes with a single submesh and no holes
     public static Vector2[] ProjectAndWeld(GameObject obj, Mesh mesh, float threshold)
     {
         Mesh locMesh = Instantiate<Mesh>(mesh);
@@ -318,16 +318,16 @@ public class ColliderBuilder : MonoBehaviour
 
     public static void RecreateMeshCollider(GameObject obj)
     {
-        PolygonCollider2D polColl = obj.GetComponent<PolygonCollider2D>();
-        EdgeCollider2D edgeColl = obj.GetComponent<EdgeCollider2D>();
+        Collider2D coll2D = obj.GetComponent<Collider2D>();
+        Collider coll3D = obj.GetComponent<Collider>();
 
-        if (polColl != null)
+        if (coll2D != null)
         {
-            DestroyImmediate(polColl);
+            DestroyImmediate(coll2D);
         }
-        else if (edgeColl != null)
+        else if (coll3D != null)
         {
-            DestroyImmediate(edgeColl);
+            DestroyImmediate(coll3D);
         }
 
         foreach (Transform child in obj.transform)
