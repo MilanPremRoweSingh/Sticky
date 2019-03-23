@@ -37,9 +37,10 @@ public class PlayerController : MonoBehaviour
 
     public void AccelerateOnInput(float xIn)
     {
-        xIn = Mathf.Sign(xIn) * Mathf.CeilToInt(Mathf.Abs(xIn));
-        Vector2 acc = xIn * startAcc * Vector2.right;
+        float xInDir = Mathf.Sign(xIn) * Mathf.CeilToInt(Mathf.Abs(xIn));
+        Vector2 acc = xInDir * startAcc * Vector2.right;
         rpp.SetAcceleration(acc);
+        rpp.SetMaxHorizSpeedForFrame(Mathf.Abs(rpp.maxHorizSpeed * xIn));
     }
 
     public void Jump()
@@ -57,6 +58,20 @@ public class PlayerController : MonoBehaviour
         rpp.restitution = 0.0f;
     }
 
+    public void MakePlayerBouncyTrigger(float axisIn)
+    {
+        if (axisIn > 0.5f)
+        {
+            rpp.restitution = 1.0f;
+        }
+        else if (rpp.restitution > 1e-3f)
+        {
+            rpp.restitution = 0.0f;
+        }
+    }
+
+
+
     public void MakePlayerSticky()
     {
         rpp.SetSticky(true);
@@ -65,5 +80,17 @@ public class PlayerController : MonoBehaviour
     public void MakePlayerUnsticky()
     {
         rpp.SetSticky(false);
+    }
+
+    public void MakePlayerStickyTrigger(float axisIn)
+    {
+        if (axisIn > 0.5f)
+        {
+            rpp.SetSticky(true);
+        }
+        else if (rpp.IsSticky())
+        {
+            rpp.SetSticky(false);
+        }
     }
 }

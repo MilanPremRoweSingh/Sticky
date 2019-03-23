@@ -8,6 +8,8 @@ public class ColliderBuilder : MonoBehaviour
     public static float vectorEqThreshold;
     public bool drawProjectedMesh;
 
+    public bool build2DCollidersOnStart;
+
     public static List<List<Vector3>> debugEdges = new List<List<Vector3>>();
 
     public void GenerateLevelColliders()
@@ -29,68 +31,14 @@ public class ColliderBuilder : MonoBehaviour
         }
     }
 
-    // Creates a shitty EdgeCollider for the object with a mesh collider
-    /*
-    public static Collider2D GenerateCollider2DForObject(GameObject obj)
+    private void Start()
     {
-        MeshCollider prevColl = obj.GetComponent<MeshCollider>();
-        if (prevColl == null || prevColl.sharedMesh == null) return null;
-
-
-        Collider2D prevColl2D = obj.GetComponent<Collider2D>();
-        if (prevColl2D != null) DestroyImmediate(prevColl2D);
-
-        Mesh mesh = prevColl.sharedMesh;
-        Mesh weldedMesh = (Mesh)Instantiate(mesh);
-        //AutoWeld(weldedMesh, 1e-2f, 1);
-        
-        List<Vector2> verts = new List<Vector2>(weldedMesh.vertexCount);
-        Vector3[] meshVerts = weldedMesh.vertices;
-        Dictionary<UnorderedIndexPair, int> edges = new Dictionary<UnorderedIndexPair, int>();
-        int[] tris = weldedMesh.GetIndices(0);
-        for (int i = 0; i < tris.Length/3; i++) 
+        if (build2DCollidersOnStart)
         {
-            UnorderedIndexPair e0 = new UnorderedIndexPair(tris[3*i+0],tris[3*i+1]);
-            if (edges.ContainsKey(e0))
-            {
-                edges[e0] += 1;
-            }
-            else
-            {
-                edges[e0] = 1;
-            }
-            
-            UnorderedIndexPair e1 = new UnorderedIndexPair(tris[3*i+1],tris[3*i+2]);
-            if (edges.ContainsKey(e1))
-            {
-                edges[e1] += 1;
-            }
-            else
-            {
-                edges[e1] = 1;
-            }
+            Generate3DColliders();
+            GenerateLevelColliders();
         }
-
-        foreach (UnorderedIndexPair edge in edges.Keys)
-        {
-            if (edges[edge] == 1)
-            {
-                verts.Add(new Vector2(meshVerts[edge.first].x, meshVerts[edge.first].y));
-                verts.Add(new Vector2(meshVerts[edge.second].x, meshVerts[edge.second].y));
-            }
-        }
-        DestroyImmediate(prevColl);
-
-        EdgeCollider2D coll = obj.AddComponent<EdgeCollider2D>();
-        Vector2[] vertList = new Vector2[verts.Count+1];
-        //vertList[verts.Count] = vertList[0];
-        verts.CopyTo(vertList);
-        coll.points = verts.ToArray();
-
-        return coll;
     }
-    */
-
 
     public void ClearDebugShapes()
     {

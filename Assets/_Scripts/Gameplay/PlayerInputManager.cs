@@ -37,12 +37,15 @@ public class PlayerInputManager : MonoBehaviour
             keyDownMappings = new Dictionary<string, KeyInputFunction>()
             {
                 { "space", moveController.Jump },
+                { "joystick button 0", moveController.Jump }, // A
                 { "left shift", moveController.MakePlayerBouncy },
                 { "left ctrl", moveController.MakePlayerSticky }
             };
             axisMappings = new Dictionary<string, AxisInputFunction>()
             {
-                { "Horizontal", moveController.AccelerateOnInput }
+                { "Horizontal", moveController.AccelerateOnInput },
+                { "XboxRightTrigger", moveController.MakePlayerBouncyTrigger },
+                { "XboxLeftTrigger", moveController.MakePlayerStickyTrigger }
             };
         }
         else

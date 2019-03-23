@@ -71,6 +71,9 @@ public class RigidPlayerPhysics : MonoBehaviour
     // Used by grounding logic
     private bool groundedByCollisions = false;
 
+    // Current max HorizSpeed (changed by joystick input)
+    private float currMaxHorizSpeed;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -81,6 +84,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     private void Update()
     {
         a = Vector2.zero;
+        currMaxHorizSpeed = maxHorizSpeed;
     }
 
     private void FixedUpdate()
@@ -113,13 +117,13 @@ public class RigidPlayerPhysics : MonoBehaviour
         Vector2 velT = (Vector2.Dot(tangent, v)) * tangent;
         Vector2 accT = (Vector2.Dot(tangent, a) * Time.fixedDeltaTime) * tangent;
 
-        if (velT.magnitude > maxHorizSpeed)
+        if (velT.magnitude > currMaxHorizSpeed)
         {
             a = Vector2.zero;
         }
-        else if((velT + accT).magnitude >= maxHorizSpeed)
+        else if((velT + accT).magnitude >= currMaxHorizSpeed)
         {
-            a = tangent * Mathf.Sign((Vector2.Dot(tangent, v))) * (maxHorizSpeed - velT.magnitude) / Time.fixedDeltaTime;
+            a = tangent * Mathf.Sign((Vector2.Dot(tangent, v))) * (currMaxHorizSpeed - velT.magnitude) / Time.fixedDeltaTime;
         }
         f += mass * a;
 
@@ -152,7 +156,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         if (isStuck)
         {
-            setStuck(false);
+            SetStuck(false);
             AddForce(jumpForce);
         }
         else if (isGrounded)
@@ -160,6 +164,16 @@ public class RigidPlayerPhysics : MonoBehaviour
             AddForce(jumpForce);
         }
     }
+
+    // Sets the maximum horizontal speed that will be accelerated to with acceleration until the next frame
+    public void SetMaxHorizSpeedForFrame( float newMax )
+    {
+        if (newMax > 1e-3f)
+        {
+            currMaxHorizSpeed = newMax;
+        }
+    }
+
 
     public void SetAcceleration( Vector2 newAcc )
     {
@@ -302,7 +316,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         else if (hit.normal.normalized.y < 0)
             transform.Translate(penDepth);
 
-        setStuck(true);
+        SetStuck(true);
         lastUnstickTime = Time.time;
         
         return isStuck;
@@ -341,7 +355,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         return isGrounded;
     }
 
-    public void setStuck(bool _isStuck)
+    public void SetStuck(bool _isStuck)
     {
         bool wasStuck = isStuck;
         isStuck = _isStuck;
@@ -360,7 +374,12 @@ public class RigidPlayerPhysics : MonoBehaviour
         }
         else
         {
-            setStuck(false);
+            SetStuck(false);
         }
+    }
+
+    public bool IsSticky()
+    {
+        return isSticky;
     }
 }
