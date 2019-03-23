@@ -60,6 +60,8 @@ public class PlayerController : MonoBehaviour
 
     public void MakePlayerBouncyTrigger(float axisIn)
     {
+        //if (axisIn < 0.1f) return;
+
         if (axisIn > 0.5f)
         {
             rpp.restitution = 1.0f;
@@ -84,6 +86,8 @@ public class PlayerController : MonoBehaviour
 
     public void MakePlayerStickyTrigger(float axisIn)
     {
+        //if (axisIn < 0.1f) return;
+
         if (axisIn > 0.5f)
         {
             rpp.SetSticky(true);

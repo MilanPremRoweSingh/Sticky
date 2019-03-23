@@ -106,7 +106,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         if (a.magnitude < 1e-3f && !isGrounded)
         {
-            float deltaVx = - v.x * airSlowdown*Time.fixedDeltaTime;
+            float deltaVx = - v.x * airSlowdown *Time.fixedDeltaTime;
             ApplyImpulse(Vector2.right * deltaVx);
         }
     }
