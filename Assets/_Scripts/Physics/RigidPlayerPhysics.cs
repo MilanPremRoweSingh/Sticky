@@ -325,8 +325,7 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private bool CheckCollisionForGrounding(RaycastHit2D hit)
     {
-
-        float normAngle = Mathf.Acos(Vector2.Dot(Vector2.right, hit.normal.normalized)) * Mathf.Rad2Deg;
+        float normAngle = Vector2.SignedAngle(Vector2.right, hit.normal.normalized); ;// Mathf.Acos(Vector2.Dot(Vector2.right, hit.normal.normalized)) * Mathf.Rad2Deg;
         return StickyMath.InRange(normAngle, 45, 135);
     }
 
