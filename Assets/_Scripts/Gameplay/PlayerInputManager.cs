@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerInputManager : MonoBehaviour
 {
     
-    public PlayerController moveController;
+    public PlayerController playerController;
 
     // Determines wheter Input.GetAxis or Input.GetAxisRaw is used
     public bool useRawAxisInput;
@@ -22,30 +22,30 @@ public class PlayerInputManager : MonoBehaviour
     // Put default mappings in here, must be called in start
     private void InitialiseMappings()
     {
-        if (moveController != null)
+        if (playerController != null)
         {
             keyUpMappings = new Dictionary<string, KeyInputFunction>()
             {
-                { "left shift", moveController.MakePlayerUnbouncy },
-                { "left ctrl", moveController.MakePlayerUnsticky }
+                { "left shift", playerController.MakePlayerUnbouncy },
+                { "left ctrl", playerController.MakePlayerUnsticky }
             };
             keyHeldMappings = new Dictionary<string, KeyInputFunction>()
             {
-                { "left shift", moveController.MakePlayerBouncy },
-                { "left ctrl", moveController.MakePlayerSticky }
+                { "left shift", playerController.MakePlayerBouncy },
+                { "left ctrl", playerController.MakePlayerSticky }
             };
             keyDownMappings = new Dictionary<string, KeyInputFunction>()
             {
-                { "space", moveController.Jump },
-                { "joystick button 0", moveController.Jump }, // A
-                { "left shift", moveController.MakePlayerBouncy },
-                { "left ctrl", moveController.MakePlayerSticky }
+                { "space", playerController.Jump },
+                //{ "joystick button 0", playerController.Jump }, // A
+                { "left shift", playerController.MakePlayerBouncy },
+                { "left ctrl", playerController.MakePlayerSticky }
             };
             axisMappings = new Dictionary<string, AxisInputFunction>()
             {
-                { "Horizontal", moveController.AccelerateOnInput },
-                { "XboxRightTrigger", moveController.MakePlayerBouncyTrigger },
-                { "XboxLeftTrigger", moveController.MakePlayerStickyTrigger }
+                { "Horizontal", playerController.AccelerateOnInput }
+                //{ "XboxRightTrigger", moveController.MakePlayerBouncyTrigger },
+                //{ "XboxLeftTrigger", moveController.MakePlayerStickyTrigger }
             };
         }
         else
@@ -60,7 +60,7 @@ public class PlayerInputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        moveController = GetComponent<PlayerController>();        InitialiseMappings();
+        playerController = GetComponent<PlayerController>();        InitialiseMappings();
     }
 
     // Update is called once per frame
