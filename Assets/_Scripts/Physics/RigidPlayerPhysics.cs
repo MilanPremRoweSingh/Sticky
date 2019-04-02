@@ -267,7 +267,6 @@ public class RigidPlayerPhysics : MonoBehaviour
         {
             // Dot product is never zero as angle is between 45 - 135 (never perp), so its fine to divide by it
             float penDepthUpMag = penDepth.magnitude / Vector2.Dot(-Vector2.up, penDepth.normalized);
-            Debug.Log(Vector2.Dot(-Vector2.up, penDepth.normalized));
             penDepth = Vector2.up * -penDepthUpMag;
         }
 
@@ -354,12 +353,12 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        DetectCollision(other);
+        if(other.gameObject.layer == LayerMask.NameToLayer("LevelGeometry"))  DetectCollision(other);
     }
 
     private void OnTriggerStay2D(Collider2D other)
     {
-        DetectCollision(other);
+        if (other.gameObject.layer == LayerMask.NameToLayer("LevelGeometry")) DetectCollision(other);
     }
 
     public Vector2 Pos2D()

@@ -17,17 +17,21 @@ public class ColliderBuilder : MonoBehaviour
         foreach (Transform child in transform)
         {
             GameObject childObj = child.gameObject;
-            Collider2D coll2D = Generate2DCollidersForObject(childObj);
-
-
+            Generate2DCollidersForObject(childObj);
         }
     }
-    public void Generate3DColliders()
+    public void Generate3DColliders(GameObject obj)
     {
-        foreach (Transform child in transform)
+        foreach (Transform child in obj.transform)
         {
-            GameObject childObj = child.gameObject;
-            RecreateMeshCollider(childObj);
+            if (child.gameObject.GetComponent<MeshRenderer>() == null)
+            {
+                Generate3DColliders(child.gameObject);
+            }
+            else
+            {
+                RecreateMeshCollider(child.gameObject);
+            }
         }
     }
 
@@ -35,7 +39,7 @@ public class ColliderBuilder : MonoBehaviour
     {
         if (build2DCollidersOnStart)
         {
-            Generate3DColliders();
+            Generate3DColliders(this.gameObject);
             GenerateLevelColliders();
         }
     }
@@ -45,10 +49,20 @@ public class ColliderBuilder : MonoBehaviour
         debugEdges.Clear();
     }
 
-    public static Collider2D Generate2DCollidersForObject(GameObject obj)
+    public static void Generate2DCollidersForObject(GameObject obj)
     {
+        MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
+        if (renderer == null)
+        {
+            foreach( Transform child in obj.transform )
+            {
+                Generate2DCollidersForObject(child.gameObject);
+            }
+            return;
+        }
+
         MeshCollider prevColl = obj.GetComponent<MeshCollider>();
-        if (prevColl == null || prevColl.sharedMesh == null) return null;
+        if (prevColl == null || prevColl.sharedMesh == null) return;
 
 
         Collider2D prevColl2D = obj.GetComponent<Collider2D>();
@@ -80,7 +94,7 @@ public class ColliderBuilder : MonoBehaviour
         foreach (List<Vector2> part in convexParts)
         {
             GameObject dummyCol = new GameObject(obj.name + "_colPart_" + partNum);
-            
+            dummyCol.layer = LayerMask.NameToLayer("LevelGeometry");
             dummyCol.transform.SetParent(colParent.transform);
             dummyCol.transform.localScale = obj.transform.localScale;
             dummyCol.transform.SetPositionAndRotation(obj.transform.position, obj.transform.rotation);
@@ -89,8 +103,7 @@ public class ColliderBuilder : MonoBehaviour
 
             partNum++;
         }
-
-        return null;
+       
     }
 
     // Only works for meshes with a single submesh and no holes

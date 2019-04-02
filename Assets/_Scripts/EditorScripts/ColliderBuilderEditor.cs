@@ -32,7 +32,7 @@ public class ColliderBuilderEditor : Editor
         }
         if (GUILayout.Button("Generate 3D Colliders"))
         {
-            myScript.Generate3DColliders();
+            myScript.Generate3DColliders(myScript.gameObject);
         }
         if (GUILayout.Button("Clear Debug Shapes"))
         {
