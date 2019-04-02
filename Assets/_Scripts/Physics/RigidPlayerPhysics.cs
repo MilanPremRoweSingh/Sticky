@@ -156,7 +156,7 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         if (isStuck)
         {
-            SetStuck(false);
+            SetStuck(false, true);
             AddForce(jumpForce);
         }
         else if (isGrounded)
@@ -339,7 +339,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         else if (hit.normal.normalized.y < 0)
             transform.Translate(penDepth);
 
-        SetStuck(true);
+        SetStuck(true, false);
         lastUnstickTime = Time.time;
         
         return isStuck;
@@ -377,11 +377,11 @@ public class RigidPlayerPhysics : MonoBehaviour
         return isGrounded;
     }
 
-    public void SetStuck(bool _isStuck)
+    public void SetStuck(bool _isStuck, bool jumpedOff)
     {
         bool wasStuck = isStuck;
         isStuck = _isStuck;
-        if (!isStuck && wasStuck)
+        if (!isStuck && wasStuck && jumpedOff)
         {
             lastUnstickTime = Time.time;
         }
@@ -396,7 +396,7 @@ public class RigidPlayerPhysics : MonoBehaviour
         }
         else
         {
-            SetStuck(false);
+            SetStuck(false, false);
         }
     }
 
