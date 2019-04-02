@@ -1,6 +1,5 @@
 1) Tutorial UI
 2) Tutorial Levels
-3) Sliding Fix
 5) Visuals
 6) Guiding/Signalling in Levels 
 7) Level Loading and Exits
