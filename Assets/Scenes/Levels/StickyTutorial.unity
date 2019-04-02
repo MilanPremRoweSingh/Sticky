@@ -132,12 +132,12 @@ PrefabInstance:
     - target: {fileID: 5014881760944054941, guid: 74ac24c9edda10247924b143c8d60847,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -11.73
+      value: 7.89
       objectReference: {fileID: 0}
     - target: {fileID: 5014881760944054941, guid: 74ac24c9edda10247924b143c8d60847,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.3
+      value: 1.76
       objectReference: {fileID: 0}
     - target: {fileID: 5014881760944054941, guid: 74ac24c9edda10247924b143c8d60847,
         type: 3}
@@ -600,7 +600,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 749925207}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.729999, y: -0.30000067, z: -10}
+  m_LocalPosition: {x: 7.890001, y: 1.7599993, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -828,7 +828,7 @@ GameObject:
   - component: {fileID: 1273756663}
   - component: {fileID: 1273756662}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Ground1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1540,17 +1540,9 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_IsSelectable: 1
-  m_SelectedFaces: 11000000
-  m_SelectedEdges:
-  - a: 68
-    b: 69
-  - a: 70
-    b: 68
-  - a: 69
-    b: 71
-  - a: 71
-    b: 70
-  m_SelectedVertices: 44000000450000004600000047000000
+  m_SelectedFaces: 
+  m_SelectedEdges: []
+  m_SelectedVertices: 
 --- !u!64 &1273756663
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1661,7 +1653,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335692433}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.729999, y: -0.30000067, z: -10}
+  m_LocalPosition: {x: 7.890001, y: 1.7599993, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 470204198}
@@ -2883,9 +2875,17 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_IsSelectable: 1
-  m_SelectedFaces: 
-  m_SelectedEdges: []
-  m_SelectedVertices: 
+  m_SelectedFaces: 02000000
+  m_SelectedEdges:
+  - a: 8
+    b: 9
+  - a: 9
+    b: 10
+  - a: 10
+    b: 11
+  - a: 11
+    b: 8
+  m_SelectedVertices: 08000000090000000a0000000b000000
 --- !u!64 &1971202061
 MeshCollider:
   m_ObjectHideFlags: 0

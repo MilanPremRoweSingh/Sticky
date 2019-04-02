@@ -250,9 +250,27 @@ public class RigidPlayerPhysics : MonoBehaviour
     /** Returns whether this collision grounds the player*/
     private bool ResolveCollision(RaycastHit2D hit)
     {
+
+        // Check if this contact grounds the player
+        bool isGroundedByCollision = CheckCollisionForGrounding(hit);
+        if (isGroundedByCollision)
+        {
+            groundTangent = new Vector2(-hit.normal.y, hit.normal.x);
+        }
+
         // Fix interpenetration with translation
         Vector2 penDepth = (Pos2D() - hit.point).normalized * radius;
         penDepth = penDepth - (Pos2D() - hit.point);
+
+        // If grounded by collision, fix interpenetration only up to prevent sliding
+        if (isGroundedByCollision)
+        {
+            // Dot product is never zero as angle is between 45 - 135 (never perp), so its fine to divide by it
+            float penDepthUpMag = penDepth.magnitude / Vector2.Dot(-Vector2.up, penDepth.normalized);
+            Debug.Log(Vector2.Dot(-Vector2.up, penDepth.normalized));
+            penDepth = Vector2.up * -penDepthUpMag;
+        }
+
         if (hit.normal.normalized.y < 0)
         {
             transform.Translate(penDepth);
@@ -266,8 +284,8 @@ public class RigidPlayerPhysics : MonoBehaviour
 
         // Calculate Force acting on body from contact resisting current forces on body (N3)
         Vector2 nNorm = hit.normal.normalized;
-        Vector2 df = Vector2.Dot(nNorm, f) * nNorm;
-        f -= df;
+        Vector2 contactN3Force = Vector2.Dot(nNorm, f) * nNorm; 
+        f -= contactN3Force;
 
         // Calculate Velocity Due to bounce
         Vector2 tNorm = new Vector2(-nNorm.y, nNorm.x);
@@ -281,8 +299,19 @@ public class RigidPlayerPhysics : MonoBehaviour
         f += dv;
 
         // Calculate Friction Force
+        float locFrictionDamping = frictionDamping;
         if (a.magnitude < 1e-3f)
         {
+            // If contact resistance force due to Newton 3 would cause sliding, and the player isnt accelerating, remove that force and increase friction damping to stop movement
+            if (Mathf.Abs(Vector2.Dot(Vector2.right, contactN3Force)) > 1e-3f)
+            {
+                Vector2 slideResistF = Vector2.right * Vector2.Dot(contactN3Force, Vector2.right) -
+                                       tNorm * Vector2.Dot(dv,tNorm);
+                f += slideResistF;
+                locFrictionDamping = 1.0f;
+            }
+
+            // Calculate Friction
             float fAlongNorm = Vector2.Dot(f, nNorm);
             float velTanDir = Vector2.Dot(v.normalized, tNorm);
             float nForceDueToGravity = -Vector2.Dot(nNorm, (gravityScale * baseGravity * mass) * Vector2.down);
@@ -291,18 +320,12 @@ public class RigidPlayerPhysics : MonoBehaviour
             // If friction would accelerate object in direction opposite to current velocity along tangent, clamp force to bring object to rest
             if (!(StickyMath.InRange(Mathf.Sign(velTanDir) - Mathf.Sign(Vector2.Dot(velAfterFriction, tNorm)), -1e-3f, 1e-3f)))
             {
-                frictionForce = -frictionDamping * velAlongTan * mass / Time.fixedDeltaTime;
+                frictionForce = -locFrictionDamping * velAlongTan * mass / Time.fixedDeltaTime;
             }
             f += frictionForce;
         }
 
 
-        // Check if this contact grounds the player
-        bool isGroundedByCollision = CheckCollisionForGrounding(hit);
-        if (isGroundedByCollision)
-        {
-            groundTangent = new Vector2(-hit.normal.y, hit.normal.x);
-        }
         return isGroundedByCollision;
             
     }
