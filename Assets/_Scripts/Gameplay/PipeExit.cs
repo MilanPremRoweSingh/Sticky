@@ -11,26 +11,62 @@ public class PipeExit : MonoBehaviour
 
     public PlayerController player;
 
+    private AsyncOperation asyncLoad;
+
+    private bool playerInTrigger = false;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        asyncLoad = null;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
+
+        if (player.attemptingPipeEnter && playerInTrigger && asyncLoad != null)
+        {
+            ActivateLoadedScene();
+        }
     }
+
+    void ActivateLoadedScene()
+    {
+        asyncLoad.allowSceneActivation = true;
+    }
+
+    IEnumerator LoadNextScene()
+    {
+        asyncLoad = SceneManager.LoadSceneAsync(scenePath);
+        asyncLoad.allowSceneActivation = false;
+
+        // Wait until the asynchronous scene fully loads
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+    }
+    
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            if (player != null)
+            playerInTrigger = true;
+            if (player != null && asyncLoad == null)
             {
-                SceneManager.LoadSceneAsync(scenePath);
+                StartCoroutine(LoadNextScene());
             }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            playerInTrigger = false;
         }
     }
 }

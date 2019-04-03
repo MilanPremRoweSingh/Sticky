@@ -18,12 +18,16 @@ public class PlayerController : MonoBehaviour
     // Force Applied on jump
     public float jumpForce;
 
+    [HideInInspector]
+    public bool attemptingPipeEnter;
+
     // Player physics script
     public RigidPlayerPhysics rpp;
 
     // Start is called before the first frame update
     void Start()
     {
+        attemptingPipeEnter = false;
     }
 
     public void ImpulseMoveOnInput(float xIn)
@@ -41,6 +45,11 @@ public class PlayerController : MonoBehaviour
         Vector2 acc = xInDir * startAcc * Vector2.right;
         rpp.SetAcceleration(acc);
         rpp.SetMaxHorizSpeedForFrame(Mathf.Abs(rpp.maxHorizSpeed * xIn));
+    }
+
+    public void EnterPipe(float yIn)
+    {
+        attemptingPipeEnter = yIn < -0.5f;
     }
 
     public void Jump()

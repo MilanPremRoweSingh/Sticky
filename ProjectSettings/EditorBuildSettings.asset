@@ -11,4 +11,16 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameplayScene.unity
     guid: 38666fc189691ae44b1ff501160c51b1
+  - enabled: 1
+    path: Assets/Scenes/Levels/StickyTutorial.unity
+    guid: 13f0d2ddb782d1c4cb9098709075f935
+  - enabled: 1
+    path: Assets/Scenes/Levels/Level1.unity
+    guid: 01d17baa94359904aa33ff04a44a96fd
+  - enabled: 1
+    path: Assets/Scenes/Levels/Level0.unity
+    guid: 47fa449ce51a8b248ba7a4a3a0cc7673
+  - enabled: 1
+    path: Assets/Scenes/Levels/Level2.unity
+    guid: a0e884059635a75479656ceb97baea97
   m_configObjects: {}

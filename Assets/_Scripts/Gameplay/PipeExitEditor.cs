@@ -6,6 +6,7 @@ public class PipeExitEditor : Editor
 {
     public override void OnInspectorGUI()
     {
+        DrawDefaultInspector();
         var picker = target as PipeExit;
         var oldScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(picker.scenePath);
 

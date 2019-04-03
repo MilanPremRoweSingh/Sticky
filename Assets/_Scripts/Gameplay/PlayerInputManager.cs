@@ -44,6 +44,7 @@ public class PlayerInputManager : MonoBehaviour
             axisMappings = new Dictionary<string, AxisInputFunction>()
             {
                 { "Horizontal", playerController.AccelerateOnInput },
+                { "Vertical", playerController.EnterPipe }
                 //{ "XboxRightTrigger", playerController.MakePlayerBouncyTrigger },
                 //{ "XboxLeftTrigger", playerController.MakePlayerStickyTrigger }
             };
