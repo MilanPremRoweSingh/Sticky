@@ -1,5 +1,6 @@
 1) Tutorial UI
-5) Visuals
-6) Guiding/Signalling in Levels 
-7) Level Loading and Exits
-9) Camera Fixes
+2) Visuals
+3) Guiding/Signalling in Levels 
+4) Camera Fixes
+5) Smoother level entrance/exit
+6) More Levels
