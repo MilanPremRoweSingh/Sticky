@@ -24,10 +24,38 @@ public class PlayerController : MonoBehaviour
     // Player physics script
     public RigidPlayerPhysics rpp;
 
+    private Vector2 nonPMoveVel;
+    private Vector2 nonPMoveTarget;
+
     // Start is called before the first frame update
     void Start()
     {
         attemptingPipeEnter = false;
+    }
+
+    private void FixedUpdate()
+    {
+        if (nonPMoveVel.magnitude > 1e-6f && rpp.enabled == false)
+        {
+            float distToTarget = (Pos2D() - nonPMoveTarget).magnitude;
+            if (distToTarget <= 1e-6f)
+            {
+                nonPMoveVel = new Vector2();
+                nonPMoveTarget = new Vector2();
+                rpp.enabled = true;
+            }
+            else if (distToTarget <= nonPMoveVel.magnitude * Time.fixedDeltaTime)
+            {
+                SetPos2D(nonPMoveTarget);
+                nonPMoveVel = new Vector2();
+                nonPMoveTarget = new Vector2();
+                rpp.enabled = true;
+            }
+            else
+            {
+                SetPos2D(Pos2D() + nonPMoveVel * Time.fixedDeltaTime);
+            }
+        }
     }
 
     public void ImpulseMoveOnInput(float xIn)
@@ -105,5 +133,30 @@ public class PlayerController : MonoBehaviour
         {
             rpp.SetSticky(false);
         }
+    }
+
+    public void MoveToNoPhysics(Vector2 target, float timeToMove)
+    {
+        if (timeToMove >= 1e-6f)
+        {
+            rpp.enabled = false;
+            nonPMoveTarget = target;
+            nonPMoveVel = (target - rpp.Pos2D()) / timeToMove;
+        }
+        else
+        {
+            rpp.Warp(target);
+        }
+    }
+
+
+    public Vector2 Pos2D()
+    {
+        return new Vector2(transform.position.x, transform.position.y);
+    }
+
+    public void SetPos2D( Vector2 newPos)
+    {
+        transform.position = new Vector3(newPos.x, newPos.y, transform.position.z);
     }
 }

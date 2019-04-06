@@ -14,6 +14,7 @@ public class PipeExit : MonoBehaviour
     private AsyncOperation asyncLoad;
 
     private bool playerInTrigger = false;
+    private bool enteringPipe = false;
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +28,12 @@ public class PipeExit : MonoBehaviour
 
 
         if (player.attemptingPipeEnter && playerInTrigger && asyncLoad != null)
+        {
+            enteringPipe = true;
+            player.MoveToNoPhysics(player.Pos2D() + Vector2.down, 1.0f);
+        }
+
+        if (enteringPipe == true && player.rpp.enabled && asyncLoad != null)
         {
             ActivateLoadedScene();
         }

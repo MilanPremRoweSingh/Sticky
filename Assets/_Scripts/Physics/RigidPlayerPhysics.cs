@@ -353,17 +353,24 @@ public class RigidPlayerPhysics : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (this.enabled != true) return;
         if(other.gameObject.layer == LayerMask.NameToLayer("LevelGeometry"))  DetectCollision(other);
     }
 
     private void OnTriggerStay2D(Collider2D other)
     {
+        if (this.enabled != true) return;
         if (other.gameObject.layer == LayerMask.NameToLayer("LevelGeometry")) DetectCollision(other);
     }
 
     public Vector2 Pos2D()
     {
         return new Vector2(transform.position.x, transform.position.y);
+    }
+
+    private void SetPos2D( Vector2 newPos )
+    {
+        transform.position = new Vector3(newPos.x, newPos.y, transform.position.z);
     }
 
     public Vector2 CurrentVel()
@@ -403,4 +410,10 @@ public class RigidPlayerPhysics : MonoBehaviour
     {
         return isSticky;
     }
+
+    public void Warp(Vector2 newPos)
+    {
+        SetPos2D(newPos);
+    }
+    
 }
