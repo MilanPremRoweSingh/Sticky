@@ -35,6 +35,13 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        NonPhysicalMoveUpdate();
+    }
+
+    // Does the work for non-physics movement set by MoveToNoPhysics (used for very simple animation. Uses constant velocity, will eventually want to 
+    // implement some kind of s-curve
+    public void NonPhysicalMoveUpdate()
+    {
         if (nonPMoveVel.magnitude > 1e-6f && rpp.enabled == false)
         {
             float distToTarget = (Pos2D() - nonPMoveTarget).magnitude;
