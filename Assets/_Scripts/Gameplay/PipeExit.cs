@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 public class PipeExit : MonoBehaviour
 {
 
+    public Animator animator;
+
     [SerializeField]
     public string scenePath;
 
@@ -15,6 +17,7 @@ public class PipeExit : MonoBehaviour
 
     private bool playerInTrigger = false;
     private bool enteringPipe = false;
+    private bool fadeOutComplete = false;
 
     // Start is called before the first frame update
     void Start()
@@ -25,24 +28,33 @@ public class PipeExit : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-
         if (player.attemptingPipeEnter && playerInTrigger && asyncLoad != null)
         {
             enteringPipe = true;
             player.MoveToNoPhysics(player.Pos2D() + Vector2.down, 1.0f);
+
+            fadeOutComplete = false;
+            animator.SetTrigger("FadeOut");
         }
 
-        if (enteringPipe == true && player.rpp.enabled && asyncLoad != null)
+        if (fadeOutComplete && enteringPipe && player.rpp.enabled && asyncLoad != null)
         {
             ActivateLoadedScene();
         }
+    }
+
+    public void OnFadeOutComplete()
+    {
+        fadeOutComplete = true;
     }
 
     void ActivateLoadedScene()
     {
         asyncLoad.allowSceneActivation = true;
     }
+
+    public void EnterNextScene()
+    { }
 
     IEnumerator LoadNextScene()
     {
